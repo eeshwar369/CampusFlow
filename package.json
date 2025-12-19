@@ -1,0 +1,16 @@
+{
+  "name": "academic-exam-management-system",
+  "version": "1.0.0",
+  "description": "Integrated Academic and Examination Management System",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "backend": "cd backend && npm start",
+    "backend:dev": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm start",
+    "ai-service": "cd ai-service && python app.py",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install && cd ../ai-service && pip install -r requirements.txt"
+  },
+  "keywords": ["academic", "exam", "management", "education"],
+  "author": "",
+  "license": "MIT"
+}

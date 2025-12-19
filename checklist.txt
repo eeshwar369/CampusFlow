@@ -1,0 +1,12 @@
+Roles:
+1.Student
+2.Admin
+3.Seatng Manager 
+4.Faculty 
+5.Club Coordinator 
+
+
+Student :
+
+
+
