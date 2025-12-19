@@ -40,7 +40,25 @@ export class AuthService {
   login(credentials: LoginCredentials): Observable<AuthResponse> {
     return this.http.post<any>(`${environment.apiUrl}/auth/login`, credentials)
       .pipe(
-        map(response => response.data),
+        map(response => {
+          const data = response.data;
+          // Transform snake_case to camelCase
+          const user: User = {
+            id: data.user.id,
+            email: data.user.email,
+            role: data.user.role,
+            roles: data.user.roles,
+            activeRole: data.user.activeRole || data.user.role,
+            firstName: data.user.first_name || data.user.firstName || '',
+            lastName: data.user.last_name || data.user.lastName || '',
+            isActive: data.user.is_active !== undefined ? data.user.is_active : data.user.isActive
+          };
+          return {
+            token: data.token,
+            user: user,
+            expiresIn: data.expiresIn
+          };
+        }),
         tap((authResponse: AuthResponse) => {
           // Store token and user data
           localStorage.setItem(this.tokenKey, authResponse.token);

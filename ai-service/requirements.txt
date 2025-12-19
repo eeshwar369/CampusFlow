@@ -1,11 +1,26 @@
+# CampusFlow AI Service - Python Dependencies
+# Compatible versions to avoid conflicts
+
+# Web Framework
 Flask==3.0.0
 Flask-CORS==4.0.0
+gunicorn==21.2.0
+
+# PDF Processing
 PyPDF2==3.0.1
 pdfplumber==0.10.3
+
+# NLP & ML
 spacy==3.7.2
 scikit-learn==1.3.2
-networkx==3.2.1
+
+# Data Processing
 pandas==2.1.4
+networkx==3.2.1
+
+# Utilities
 requests==2.31.0
 python-dotenv==1.0.0
-gunicorn==21.2.0
+
+# Note: After installation, download spaCy language model:
+# python -m spacy download en_core_web_sm

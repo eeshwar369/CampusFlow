@@ -80,4 +80,12 @@ export class StudentService {
   markNotificationRead(notificationId: number): Observable<any> {
     return this.http.put(`${this.apiUrl}/notifications/${notificationId}/read`, {});
   }
+
+  getApprovedEvents(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/events`);
+  }
+
+  participateInEvent(eventId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/events/${eventId}/participate`, {});
+  }
 }

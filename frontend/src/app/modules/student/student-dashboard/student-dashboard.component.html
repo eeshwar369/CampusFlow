@@ -12,6 +12,32 @@
   </div>
 
   <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button routerLink="/student/mindmap" class="action-btn mindmap-btn">
+          <span class="btn-icon">🗺️</span>
+          <span class="btn-text">Mind Map Helper</span>
+        </button>
+        <button routerLink="/student/hall-tickets" class="action-btn">
+          <span class="btn-icon">🎫</span>
+          <span class="btn-text">Hall Tickets</span>
+        </button>
+        <button routerLink="/student/events" class="action-btn">
+          <span class="btn-icon">📅</span>
+          <span class="btn-text">Events</span>
+        </button>
+        <button routerLink="/student/notifications" class="action-btn notifications-btn">
+          <span class="btn-icon">🔔</span>
+          <span class="btn-text">Notifications</span>
+          <span class="badge" *ngIf="dashboard.notifications && dashboard.notifications.length > 0">
+            {{ dashboard.notifications.length }}
+          </span>
+        </button>
+      </div>
+    </div>
+
     <!-- Student Info -->
     <div class="card student-info">
       <h2>Welcome, {{ dashboard.student.first_name }} {{ dashboard.student.last_name }}</h2>

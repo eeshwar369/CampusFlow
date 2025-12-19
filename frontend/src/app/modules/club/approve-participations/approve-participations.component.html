@@ -1,0 +1,79 @@
+<div class="approve-participations-container">
+  <div class="page-header">
+    <h1>Approve Participations</h1>
+    <p>Review and approve student participation requests for your events</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading pending requests...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && participations.length === 0">
+    <div class="empty-icon">👥</div>
+    <h3>No Pending Requests</h3>
+    <p>All participation requests have been reviewed</p>
+  </div>
+
+  <div class="participations-list" *ngIf="!loading && participations.length > 0">
+    <div class="participation-card" *ngFor="let participation of participations">
+      <div class="card-header">
+        <div class="student-info">
+          <h3>{{ participation.first_name }} {{ participation.last_name }}</h3>
+          <p class="roll-number">{{ participation.roll_number }}</p>
+        </div>
+        <span class="status-badge pending">Pending</span>
+      </div>
+
+      <div class="event-info">
+        <h4>{{ participation.event_title }}</h4>
+        <div class="info-row">
+          <span class="label">📅 Event Date:</span>
+          <span class="value">{{ participation.event_date | date: 'mediumDate' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">📧 Email:</span>
+          <span class="value">{{ participation.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">⏰ Requested:</span>
+          <span class="value">{{ participation.requested_at | date: 'short' }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button class="btn btn-success" (click)="approveParticipation(participation)">
+          ✓ Approve
+        </button>
+        <button class="btn btn-danger" (click)="openRejectModal(participation)">
+          ✗ Reject
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reject Participation</h2>
+        <button class="close-btn" (click)="closeRejectModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Reject participation request from <strong>{{ selectedParticipation?.first_name }} {{ selectedParticipation?.last_name }}</strong>?</p>
+        <div class="form-group">
+          <label>Rejection Reason *</label>
+          <textarea 
+            [(ngModel)]="rejectionReason" 
+            placeholder="Please provide a reason for rejection..."
+            rows="4"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="rejectParticipation()">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>

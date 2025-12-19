@@ -52,4 +52,21 @@ export class ClubService {
     return this.http.get<any>(this.apiUrl)
       .pipe(map(response => response.data));
   }
+
+  getMembers(clubId: number): Observable<any[]> {
+    return this.http.get<any>(`${this.apiUrl}/${clubId}/members`)
+      .pipe(map(response => response.data));
+  }
+
+  getPendingParticipations(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/participations/pending`);
+  }
+
+  approveParticipation(participationId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/participations/${participationId}/approve`, {});
+  }
+
+  rejectParticipation(participationId: number, reason: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/participations/${participationId}/reject`, { reason });
+  }
 }

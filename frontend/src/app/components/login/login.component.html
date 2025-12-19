@@ -1,27 +1,60 @@
 <div class="login-container">
+  <div class="login-background">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+  </div>
+  
   <div class="login-card">
-    <h2>Academic Exam Management System</h2>
-    <h3>Login</h3>
+    <div class="logo-section">
+      <div class="logo-icon">
+        <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="28" fill="url(#gradient1)" />
+          <path d="M30 15L40 25L30 35L20 25L30 15Z" fill="white" opacity="0.9"/>
+          <path d="M30 25L40 35L30 45L20 35L30 25Z" fill="white" opacity="0.7"/>
+          <defs>
+            <linearGradient id="gradient1" x1="0" y1="0" x2="60" y2="60">
+              <stop offset="0%" stop-color="#667eea"/>
+              <stop offset="100%" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <h1 class="app-title">CampusFlow</h1>
+      <p class="app-subtitle">Academic Excellence Management</p>
+    </div>
     
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
       <div class="form-group">
-        <label for="email">Email</label>
+        <label for="email">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+          Email Address
+        </label>
         <input 
           type="email" 
           id="email"
           formControlName="email" 
           class="form-control"
           [class.is-invalid]="submitted && f['email'].errors"
-          placeholder="Enter your email"
+          placeholder="your.email@university.edu"
         />
         <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
-          <div *ngIf="f['email'].errors['required']">Email is required</div>
-          <div *ngIf="f['email'].errors['email']">Email must be valid</div>
+          <div *ngIf="f['email'].errors['required']">✗ Email is required</div>
+          <div *ngIf="f['email'].errors['email']">✗ Please enter a valid email</div>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Password
+        </label>
         <input 
           type="password" 
           id="password"
@@ -31,23 +64,53 @@
           placeholder="Enter your password"
         />
         <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
-          <div *ngIf="f['password'].errors['required']">Password is required</div>
-          <div *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</div>
+          <div *ngIf="f['password'].errors['required']">✗ Password is required</div>
+          <div *ngIf="f['password'].errors['minlength']">✗ Minimum 6 characters required</div>
         </div>
       </div>
 
       <div *ngIf="error" class="alert alert-danger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
         {{ error }}
       </div>
 
       <button 
         type="submit" 
-        class="btn btn-primary btn-block"
+        class="btn btn-primary"
         [disabled]="loading"
       >
         <span *ngIf="loading" class="spinner"></span>
-        <span *ngIf="!loading">Login</span>
+        <span *ngIf="!loading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+            <polyline points="10 17 15 12 10 7"/>
+            <line x1="15" y1="12" x2="3" y2="12"/>
+          </svg>
+          Sign In
+        </span>
       </button>
+      
+      <div class="demo-credentials">
+        <p class="demo-title">Demo Credentials</p>
+        <div class="demo-grid">
+          <div class="demo-item">
+            <strong>Admin:</strong> admin@university.edu
+          </div>
+          <div class="demo-item">
+            <strong>Student:</strong> student1@university.edu
+          </div>
+          <div class="demo-item">
+            <strong>Faculty:</strong> faculty1@university.edu
+          </div>
+          <div class="demo-item">
+            <strong>Password:</strong> password123
+          </div>
+        </div>
+      </div>
     </form>
   </div>
 </div>

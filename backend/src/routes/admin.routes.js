@@ -68,4 +68,9 @@ router.get('/exams', adminController.getExams);
 // Rooms
 router.get('/rooms', adminController.getRooms);
 
+// Events
+router.get('/events/pending', adminController.getPendingEvents);
+router.put('/events/:eventId/approve', adminController.approveEvent);
+router.put('/events/:eventId/reject', adminController.rejectEvent);
+
 module.exports = router;

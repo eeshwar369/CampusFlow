@@ -1,0 +1,91 @@
+<div class="events-container">
+  <div class="page-header">
+    <h1>Upcoming Events</h1>
+    <p>Participate in approved campus events</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading events...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && events.length === 0">
+    <div class="empty-icon">📅</div>
+    <h3>No Upcoming Events</h3>
+    <p>There are no approved events at the moment</p>
+  </div>
+
+  <div class="events-grid" *ngIf="!loading && events.length > 0">
+    <div class="event-card" *ngFor="let event of events">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span 
+          class="status-badge" 
+          [ngClass]="getStatusBadgeClass(event.participation_status)"
+          *ngIf="event.participation_status"
+        >
+          {{ getStatusText(event.participation_status) }}
+        </span>
+      </div>
+
+      <div class="event-details">
+        <div class="detail-row">
+          <span class="label">📅 Date:</span>
+          <span class="value">{{ event.event_date | date: 'fullDate' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">⏰ Time:</span>
+          <span class="value">{{ event.start_time }} - {{ event.end_time }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">📍 Location:</span>
+          <span class="value">{{ event.location }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">👥 Expected:</span>
+          <span class="value">{{ event.expected_attendance }} participants</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">👤 Coordinator:</span>
+          <span class="value">{{ event.coordinator_first_name }} {{ event.coordinator_last_name }}</span>
+        </div>
+      </div>
+
+      <div class="event-description">
+        <h4>About This Event</h4>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <div class="event-actions">
+        <button 
+          class="btn btn-primary" 
+          (click)="participateInEvent(event)"
+          *ngIf="!event.participation_status"
+        >
+          🎯 Request Participation
+        </button>
+        <button 
+          class="btn btn-disabled" 
+          disabled
+          *ngIf="event.participation_status === 'pending'"
+        >
+          ⏳ Waiting for Approval
+        </button>
+        <button 
+          class="btn btn-success" 
+          disabled
+          *ngIf="event.participation_status === 'approved'"
+        >
+          ✓ Participation Approved
+        </button>
+        <button 
+          class="btn btn-danger" 
+          disabled
+          *ngIf="event.participation_status === 'rejected'"
+        >
+          ✗ Request Rejected
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

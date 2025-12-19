@@ -180,6 +180,39 @@ class ClubController {
       next(error);
     }
   }
+
+  async getPendingParticipations(req, res, next) {
+    try {
+      const coordinatorId = req.user.id;
+      const participations = await clubService.getPendingParticipations(coordinatorId);
+      res.json({ success: true, data: participations });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveParticipation(req, res, next) {
+    try {
+      const { participationId } = req.params;
+      const coordinatorId = req.user.id;
+      await clubService.approveParticipation(participationId, coordinatorId);
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async rejectParticipation(req, res, next) {
+    try {
+      const { participationId } = req.params;
+      const coordinatorId = req.user.id;
+      const { reason } = req.body;
+      await clubService.rejectParticipation(participationId, coordinatorId, reason);
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new ClubController();

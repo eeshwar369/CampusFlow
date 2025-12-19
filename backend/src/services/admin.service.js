@@ -15,13 +15,17 @@ class AdminService {
     const [pendingTickets] = await db.query(`
       SELECT COUNT(*) as count FROM hall_tickets WHERE status = 'pending'
     `);
+    const [pendingEvents] = await db.query(`
+      SELECT COUNT(*) as count FROM events WHERE status = 'pending'
+    `);
 
     return {
       students: studentCount[0].count,
       faculty: facultyCount[0].count,
       courses: courseCount[0].count,
       pendingPayments: pendingPayments[0].count,
-      pendingTickets: pendingTickets[0].count
+      pendingTickets: pendingTickets[0].count,
+      pendingEvents: pendingEvents[0].count
     };
   }
 
@@ -542,6 +546,71 @@ class AdminService {
       ORDER BY s.department, s.year, s.roll_number
     `);
     return students;
+  }
+
+  /**
+   * Get pending events for approval
+   */
+  async getPendingEvents() {
+    const [events] = await db.query(`
+      SELECT e.*, u.first_name, u.last_name, u.email
+      FROM events e
+      JOIN users u ON e.submitted_by = u.id
+      WHERE e.status = 'pending'
+      ORDER BY e.submitted_at DESC
+    `);
+    return events;
+  }
+
+  /**
+   * Approve event
+   */
+  async approveEvent(eventId, adminId) {
+    const notificationService = require('./notification.service');
+    
+    // Update event status
+    await db.query(`
+      UPDATE events
+      SET status = 'approved', reviewed_by = ?, reviewed_at = NOW()
+      WHERE id = ?
+    `, [adminId, eventId]);
+
+    // Get event details
+    const [events] = await db.query('SELECT * FROM events WHERE id = ?', [eventId]);
+    const event = events[0];
+
+    // Get all active students
+    const [students] = await db.query(`
+      SELECT u.id 
+      FROM users u
+      WHERE u.role = 'student' AND u.is_active = true
+    `);
+
+    // Send notification directly to all students
+    if (students.length > 0) {
+      const userIds = students.map(s => s.id);
+      await notificationService.sendToUsers(
+        userIds,
+        `New Event: ${event.title}`,
+        `${event.title} has been approved! Date: ${new Date(event.event_date).toLocaleDateString()}. Location: ${event.location}. Check the Events page to participate!`,
+        'event'
+      );
+    }
+
+    return true;
+  }
+
+  /**
+   * Reject event
+   */
+  async rejectEvent(eventId, adminId, reason) {
+    await db.query(`
+      UPDATE events
+      SET status = 'rejected', reviewed_by = ?, reviewed_at = NOW(), rejection_reason = ?
+      WHERE id = ?
+    `, [adminId, reason, eventId]);
+
+    return true;
   }
 
   /**

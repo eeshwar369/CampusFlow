@@ -39,7 +39,10 @@ router.get('/mind-maps', studentController.getMindMaps);
 
 // Clubs
 router.get('/clubs/memberships', studentController.getClubMemberships);
+
+// Events
 router.get('/events', studentController.getEvents);
+router.post('/events/:eventId/participate', studentController.participateInEvent);
 router.post('/events/register', studentController.registerForEvent);
 
 // Notifications

@@ -247,16 +247,19 @@ class StudentService {
   }
 
   /**
-   * Get events
+   * Get approved events
    */
-  async getEvents(studentId) {
+  async getApprovedEvents(studentId) {
     const [events] = await db.query(`
-      SELECT e.*, c.name as club_name,
-             ep.status as participation_status
+      SELECT e.*, 
+             u.first_name as coordinator_first_name, 
+             u.last_name as coordinator_last_name,
+             ep.status as participation_status,
+             ep.id as participation_id
       FROM events e
-      LEFT JOIN clubs c ON e.club_id = c.id
-      LEFT JOIN event_participants ep ON e.id = ep.event_id AND ep.student_id = ?
-      WHERE e.event_date >= CURDATE()
+      JOIN users u ON e.submitted_by = u.id
+      LEFT JOIN event_participations ep ON e.id = ep.event_id AND ep.student_id = ?
+      WHERE e.status = 'approved' AND e.event_date >= CURDATE()
       ORDER BY e.event_date ASC
     `, [studentId]);
 
@@ -264,16 +267,53 @@ class StudentService {
   }
 
   /**
-   * Register for event
+   * Participate in event
    */
-  async registerForEvent(studentId, eventId) {
+  async participateInEvent(studentId, eventId) {
+    // Check if already participated
+    const [existing] = await db.query(`
+      SELECT id FROM event_participations
+      WHERE event_id = ? AND student_id = ?
+    `, [eventId, studentId]);
+
+    if (existing.length > 0) {
+      throw new Error('Already requested participation for this event');
+    }
+
+    // Check if event is approved
+    const [events] = await db.query(`
+      SELECT status FROM events WHERE id = ?
+    `, [eventId]);
+
+    if (events.length === 0) {
+      throw new Error('Event not found');
+    }
+
+    if (events[0].status !== 'approved') {
+      throw new Error('Event is not approved yet');
+    }
+
     const [result] = await db.query(`
-      INSERT INTO event_participants
+      INSERT INTO event_participations
       (event_id, student_id, status)
-      VALUES (?, ?, 'registered')
+      VALUES (?, ?, 'pending')
     `, [eventId, studentId]);
 
     return result.insertId;
+  }
+
+  /**
+   * Get events (legacy method for compatibility)
+   */
+  async getEvents(studentId) {
+    return this.getApprovedEvents(studentId);
+  }
+
+  /**
+   * Register for event (legacy method for compatibility)
+   */
+  async registerForEvent(studentId, eventId) {
+    return this.participateInEvent(studentId, eventId);
   }
 }
 

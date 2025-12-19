@@ -7,9 +7,9 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# CORS configuration
-cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:3000').split(',')
-CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+# CORS configuration - Allow all routes for frontend access
+cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:4200,http://localhost:3000').split(',')
+CORS(app, resources={r"/*": {"origins": cors_origins}})
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -52,6 +52,71 @@ def parse_syllabus():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/generate-mindmap', methods=['POST'])
+def generate_mindmap_simple():
+    """Generate mind map from uploaded PDF syllabus - Simple endpoint"""
+    try:
+        from services.pdf_processor import PDFProcessor
+        from services.mindmap_service import MindMapService
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        
+        if not file or file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({'error': 'Only PDF files are allowed'}), 400
+        
+        # Save uploaded file
+        upload_folder = 'uploads/syllabus'
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, file.filename)
+        file.save(file_path)
+        
+        try:
+            # Extract text from PDF
+            pdf_processor = PDFProcessor()
+            text = pdf_processor.extract_text(file_path)
+            
+            if not text or len(text.strip()) < 50:
+                return jsonify({'error': 'Could not extract sufficient text from PDF'}), 400
+            
+            # Generate mind map
+            mindmap_service = MindMapService()
+            mindmap_data = mindmap_service.generate_mindmap(text)
+            
+            # Link study resources
+            resources = mindmap_service.link_resources(mindmap_data.get('topics', []))
+            
+            result = {
+                'course_info': {
+                    'title': file.filename.replace('.pdf', ''),
+                    'description': 'Generated from uploaded syllabus'
+                },
+                'topics': mindmap_data.get('topics', []),
+                'resources': resources,
+                'key_concepts': mindmap_data.get('key_concepts', [])
+            }
+            
+            # Clean up
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            return jsonify(result), 200
+            
+        except Exception as e:
+            # Clean up on error
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise e
+    
+    except Exception as e:
+        print(f"Error generating mindmap: {str(e)}")
+        return jsonify({'error': f'Failed to generate mind map: {str(e)}'}), 500
 
 @app.route('/api/ai/generate-mindmap', methods=['POST'])
 def generate_mindmap():

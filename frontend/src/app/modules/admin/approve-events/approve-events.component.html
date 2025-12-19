@@ -1,0 +1,92 @@
+<div class="approve-events-container">
+  <div class="page-header">
+    <h1>Approve Events</h1>
+    <p>Review and approve pending event requests from club coordinators</p>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading pending events...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && pendingEvents.length === 0">
+    <div class="empty-icon">📅</div>
+    <h3>No Pending Events</h3>
+    <p>All event requests have been reviewed</p>
+  </div>
+
+  <div class="events-grid" *ngIf="!loading && pendingEvents.length > 0">
+    <div class="event-card" *ngFor="let event of pendingEvents">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="status-badge pending">Pending</span>
+      </div>
+
+      <div class="event-details">
+        <div class="detail-row">
+          <span class="label">📅 Date:</span>
+          <span class="value">{{ event.event_date | date: 'mediumDate' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">⏰ Time:</span>
+          <span class="value">{{ event.start_time }} - {{ event.end_time }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">📍 Location:</span>
+          <span class="value">{{ event.location }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">👥 Expected:</span>
+          <span class="value">{{ event.expected_attendance }} participants</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">👤 Submitted by:</span>
+          <span class="value">{{ event.first_name }} {{ event.last_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">📧 Email:</span>
+          <span class="value">{{ event.email }}</span>
+        </div>
+      </div>
+
+      <div class="event-description">
+        <h4>Description</h4>
+        <p>{{ event.description }}</p>
+      </div>
+
+      <div class="event-actions">
+        <button class="btn btn-success" (click)="approveEvent(event)">
+          ✓ Approve & Notify Students
+        </button>
+        <button class="btn btn-danger" (click)="openRejectModal(event)">
+          ✗ Reject
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reject Modal -->
+  <div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reject Event</h2>
+        <button class="close-btn" (click)="closeRejectModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to reject "{{ selectedEvent?.title }}"?</p>
+        <div class="form-group">
+          <label>Rejection Reason *</label>
+          <textarea 
+            [(ngModel)]="rejectionReason" 
+            placeholder="Please provide a reason for rejection..."
+            rows="4"
+          ></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeRejectModal()">Cancel</button>
+        <button class="btn btn-danger" (click)="rejectEvent()">Reject Event</button>
+      </div>
+    </div>
+  </div>
+</div>

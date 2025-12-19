@@ -1,50 +1,134 @@
+<app-header></app-header>
 <div class="mindmap-container">
-  <h2>Mind Map Helper</h2>
-  <p class="subtitle">Upload your syllabus PDF to generate an interactive mind map with study resources</p>
+  <div class="page-header">
+    <h1>Mind Map Helper</h1>
+    <p>Upload your syllabus PDF to generate an interactive mind map with study resources</p>
+  </div>
 
   <!-- Upload Section -->
   <div class="upload-section card">
-    <h3>Upload Syllabus PDF</h3>
-    <div class="upload-form">
-      <input type="file" 
-             accept=".pdf" 
-             (change)="onFileSelected($event)"
-             [disabled]="uploading">
-      <button (click)="uploadSyllabus()" 
-              [disabled]="!selectedFile || uploading"
-              class="btn-primary">
-        {{ uploading ? 'Generating...' : 'Generate Mind Map' }}
-      </button>
+    <div class="card-header">
+      <h3>📄 Upload Syllabus PDF</h3>
+      <p>Convert your syllabus into an organized mind map with linked study materials</p>
     </div>
-    <div *ngIf="error" class="error-message">{{ error }}</div>
+    
+    <div class="upload-area">
+      <div class="file-input-wrapper">
+        <input 
+          type="file" 
+          id="pdfFile"
+          accept=".pdf" 
+          (change)="onFileSelected($event)"
+          [disabled]="uploading"
+          #fileInput
+        >
+        <label for="pdfFile" class="file-label" [class.disabled]="uploading">
+          <span class="upload-icon">📁</span>
+          <span class="upload-text">
+            {{ fileName || 'Choose PDF file or drag here' }}
+          </span>
+          <span class="file-hint">Maximum file size: 10MB</span>
+        </label>
+      </div>
+
+      <div class="selected-file" *ngIf="selectedFile && !uploading">
+        <div class="file-info">
+          <span class="file-icon">📄</span>
+          <span class="file-name">{{ fileName }}</span>
+          <span class="file-size">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</span>
+        </div>
+        <button class="clear-btn" (click)="clearSelection()">✕</button>
+      </div>
+
+      <div class="upload-progress" *ngIf="uploading">
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="uploadProgress"></div>
+        </div>
+        <p class="progress-text">{{ uploadProgress }}% - Analyzing PDF and generating mind map...</p>
+      </div>
+
+      <button 
+        class="btn btn-primary btn-upload" 
+        (click)="uploadSyllabus()" 
+        [disabled]="!selectedFile || uploading"
+      >
+        <span *ngIf="!uploading">🚀 Generate Mind Map</span>
+        <span *ngIf="uploading">⏳ Processing...</span>
+      </button>
+
+      <div *ngIf="error" class="error-message">
+        <span class="error-icon">⚠️</span>
+        {{ error }}
+      </div>
+    </div>
   </div>
 
   <!-- Mind Map Display -->
   <div *ngIf="mindMapData" class="mindmap-display card">
-    <h3>Generated Mind Map</h3>
+    <div class="card-header">
+      <h3>🗺️ Generated Mind Map</h3>
+      <button class="btn-close" (click)="clearMindMap()">✕</button>
+    </div>
+    
     <div class="mindmap-content">
-      <div class="topics-tree">
-        <div *ngFor="let topic of mindMapData.mindmap?.topics" class="topic-node">
-          <h4>{{ topic.name }}</h4>
-          <ul *ngIf="topic.subtopics">
-            <li *ngFor="let subtopic of topic.subtopics">{{ subtopic }}</li>
-          </ul>
+      <!-- Course Info -->
+      <div class="course-info" *ngIf="mindMapData.course_info">
+        <h4>{{ mindMapData.course_info.title || 'Course Overview' }}</h4>
+        <p *ngIf="mindMapData.course_info.description">{{ mindMapData.course_info.description }}</p>
+      </div>
+
+      <!-- Topics Tree -->
+      <div class="topics-section">
+        <h4>📚 Topics & Subtopics</h4>
+        <div class="topics-tree">
+          <div *ngFor="let topic of mindMapData.topics; let i = index" class="topic-node">
+            <div class="topic-header">
+              <span class="topic-number">{{ i + 1 }}</span>
+              <h5>{{ topic.name || topic.topic }}</h5>
+            </div>
+            <ul class="subtopics-list" *ngIf="topic.subtopics && topic.subtopics.length > 0">
+              <li *ngFor="let subtopic of topic.subtopics" class="subtopic-item">
+                <span class="bullet">•</span>
+                {{ subtopic }}
+              </li>
+            </ul>
+            <div class="topic-description" *ngIf="topic.description">
+              <p>{{ topic.description }}</p>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Study Resources -->
-      <div class="resources-section">
-        <h4>Study Resources</h4>
-        <div *ngFor="let resource of mindMapData.resources" class="resource-item">
-          <h5>{{ resource.topic }}</h5>
-          <div class="resource-links">
-            <a *ngFor="let link of resource.resources" 
-               [href]="link.url" 
-               target="_blank"
-               class="resource-link">
-              <span class="resource-type">{{ link.type }}</span>
-              {{ link.title }}
-            </a>
+      <div class="resources-section" *ngIf="mindMapData.resources && mindMapData.resources.length > 0">
+        <h4>🔗 Study Resources</h4>
+        <div class="resources-grid">
+          <div *ngFor="let resource of mindMapData.resources" class="resource-card">
+            <h5>{{ resource.topic }}</h5>
+            <div class="resource-links">
+              <a *ngFor="let link of resource.links" 
+                 [href]="link.url" 
+                 target="_blank"
+                 class="resource-link"
+                 [class]="'type-' + link.type">
+                <span class="link-icon">
+                  {{ link.type === 'video' ? '🎥' : link.type === 'article' ? '📄' : link.type === 'tutorial' ? '📖' : '🔗' }}
+                </span>
+                <span class="link-text">{{ link.title }}</span>
+                <span class="external-icon">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Key Concepts -->
+      <div class="concepts-section" *ngIf="mindMapData.key_concepts && mindMapData.key_concepts.length > 0">
+        <h4>💡 Key Concepts</h4>
+        <div class="concepts-grid">
+          <div *ngFor="let concept of mindMapData.key_concepts" class="concept-card">
+            <h5>{{ concept.name }}</h5>
+            <p>{{ concept.description }}</p>
           </div>
         </div>
       </div>
@@ -53,16 +137,37 @@
 
   <!-- Saved Mind Maps -->
   <div class="saved-mindmaps card">
-    <h3>Your Saved Mind Maps</h3>
-    <div *ngIf="loading" class="loading">Loading...</div>
-    <div *ngIf="!loading && savedMindMaps.length === 0" class="empty-state">
-      No saved mind maps yet. Upload a syllabus to get started!
+    <div class="card-header">
+      <h3>📂 Your Saved Mind Maps</h3>
+      <span class="count-badge">{{ savedMindMaps.length }}</span>
     </div>
-    <div class="mindmap-list">
-      <div *ngFor="let map of savedMindMaps" class="mindmap-item" (click)="viewMindMap(map)">
-        <h4>{{ map.course_name }}</h4>
-        <p>Generated: {{ map.generated_at | date:'short' }}</p>
-        <span class="status" [class]="map.status">{{ map.status }}</span>
+    
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading your mind maps...</p>
+    </div>
+
+    <div *ngIf="!loading && savedMindMaps.length === 0" class="empty-state">
+      <div class="empty-icon">🗺️</div>
+      <h4>No Mind Maps Yet</h4>
+      <p>Upload a syllabus PDF to create your first mind map!</p>
+    </div>
+
+    <div class="mindmap-grid" *ngIf="!loading && savedMindMaps.length > 0">
+      <div *ngFor="let map of savedMindMaps" class="mindmap-card" (click)="viewMindMap(map)">
+        <div class="map-icon">📄</div>
+        <div class="map-info">
+          <h4>{{ map.course_name || map.title || 'Untitled' }}</h4>
+          <p class="map-date">
+            <span class="date-icon">📅</span>
+            {{ map.created_at | date:'mediumDate' }}
+          </p>
+          <p class="map-topics" *ngIf="map.topic_count">
+            <span class="topics-icon">📚</span>
+            {{ map.topic_count }} topics
+          </p>
+        </div>
+        <button class="view-btn">View →</button>
       </div>
     </div>
   </div>

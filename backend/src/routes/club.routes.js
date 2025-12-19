@@ -36,4 +36,9 @@ router.post('/events/:eventId/documents', upload.single('file'), clubController.
 // Achievements
 router.post('/:clubId/achievements', clubController.recordAchievement);
 
+// Participation management
+router.get('/participations/pending', clubController.getPendingParticipations);
+router.put('/participations/:participationId/approve', clubController.approveParticipation);
+router.put('/participations/:participationId/reject', clubController.rejectParticipation);
+
 module.exports = router;

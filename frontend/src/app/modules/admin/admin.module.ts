@@ -13,6 +13,7 @@ import { ApprovePaymentsComponent } from './approve-payments/approve-payments.co
 import { ApproveHallTicketsComponent } from './approve-hall-tickets/approve-hall-tickets.component';
 import { PublishNotificationsComponent } from './publish-notifications/publish-notifications.component';
 import { GenerateReportsComponent } from './generate-reports/generate-reports.component';
+import { ApproveEventsComponent } from './approve-events/approve-events.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -25,7 +26,8 @@ const routes: Routes = [
   { path: 'reports', component: GenerateReportsComponent },
   { path: 'seating', component: SeatingAllocationComponent },
   { path: 'bulk-upload', component: BulkUploadComponent },
-  { path: 'events', component: EventManagementComponent }
+  { path: 'events', component: EventManagementComponent },
+  { path: 'approve-events', component: ApproveEventsComponent }
 ];
 
 @NgModule({
@@ -39,7 +41,8 @@ const routes: Routes = [
     ApprovePaymentsComponent,
     ApproveHallTicketsComponent,
     PublishNotificationsComponent,
-    GenerateReportsComponent
+    GenerateReportsComponent,
+    ApproveEventsComponent
   ],
   imports: [
     CommonModule,

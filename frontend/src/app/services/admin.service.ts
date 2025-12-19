@@ -86,4 +86,16 @@ export class AdminService {
   getAuditLogs(filters?: any): Observable<any> {
     return this.http.get(`${this.apiUrl}/audit-logs`, { params: filters });
   }
+
+  getPendingEvents(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/events/pending`);
+  }
+
+  approveEvent(eventId: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/events/${eventId}/approve`, {});
+  }
+
+  rejectEvent(eventId: number, reason: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/events/${eventId}/reject`, { reason });
+  }
 }

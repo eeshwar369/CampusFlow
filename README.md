@@ -4,6 +4,33 @@ Complete integrated Academic and Examination Management System with AI-powered f
 
 ---
 
+## 📚 Documentation
+
+- **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Complete development guide with auto-reload setup ⚡
+- **[SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)** - Initial setup and troubleshooting
+- **[CLUB_FEATURES_COMPLETE.md](CLUB_FEATURES_COMPLETE.md)** - Club management features
+
+## 🚀 Quick Start for Development
+
+**All services now support automatic restart/reload on code changes!** 🎉
+
+```bash
+# Backend (auto-restart with nodemon)
+cd backend
+npm run dev
+
+# Frontend (auto-reload with Angular CLI)
+cd frontend
+npm start
+
+# AI Service (auto-reload with Flask)
+cd ai-service
+.\run-dev.ps1  # Windows
+./run-dev.sh   # Linux/Mac
+```
+
+---
+
 ## 🎯 Features
 
 ### Core Features

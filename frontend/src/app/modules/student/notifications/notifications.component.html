@@ -1,0 +1,44 @@
+<app-header></app-header>
+<div class="notifications-container">
+  <div class="page-header">
+    <h1>Notifications</h1>
+    <div class="header-actions">
+      <button class="filter-btn" (click)="toggleFilter()">
+        {{ showUnreadOnly ? '📬 Show All' : '📭 Show Unread Only' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading notifications...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && notifications.length === 0">
+    <div class="empty-icon">🔔</div>
+    <h3>No Notifications</h3>
+    <p>{{ showUnreadOnly ? 'You have no unread notifications' : 'You have no notifications yet' }}</p>
+  </div>
+
+  <div class="notifications-list" *ngIf="!loading && notifications.length > 0">
+    <div 
+      *ngFor="let notification of notifications" 
+      class="notification-card"
+      [class.unread]="!notification.is_read"
+      [ngClass]="getNotificationClass(notification.type)"
+      (click)="markAsRead(notification)"
+    >
+      <div class="notification-icon">
+        {{ getNotificationIcon(notification.type) }}
+      </div>
+      <div class="notification-content">
+        <h3>{{ notification.title }}</h3>
+        <p>{{ notification.message }}</p>
+        <div class="notification-meta">
+          <span class="notification-time">{{ notification.created_at | date:'medium' }}</span>
+          <span class="notification-status" *ngIf="!notification.is_read">● Unread</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

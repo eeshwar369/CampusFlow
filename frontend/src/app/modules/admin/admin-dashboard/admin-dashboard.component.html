@@ -37,6 +37,12 @@
         <h3>Pending Hall Tickets</h3>
         <p class="stat-number">{{ dashboard.pendingTickets }}</p>
       </div>
+
+      <div class="stat-card pending" *ngIf="dashboard.pendingEvents > 0">
+        <h3>Pending Events</h3>
+        <p class="stat-number">{{ dashboard.pendingEvents }}</p>
+        <button class="view-btn" routerLink="/admin/approve-events">Review Events</button>
+      </div>
     </div>
 
     <div class="quick-actions">
@@ -46,6 +52,7 @@
         <button routerLink="/admin/courses">Manage Courses</button>
         <button routerLink="/admin/payments">Approve Payments</button>
         <button routerLink="/admin/hall-tickets">Approve Hall Tickets</button>
+        <button routerLink="/admin/approve-events">Approve Events</button>
         <button routerLink="/admin/notifications">Publish Notifications</button>
         <button routerLink="/admin/reports">Generate Reports</button>
       </div>

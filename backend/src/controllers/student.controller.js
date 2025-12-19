@@ -132,8 +132,19 @@ class StudentController {
   async getEvents(req, res, next) {
     try {
       const studentId = req.user.studentId;
-      const events = await studentService.getEvents(studentId);
+      const events = await studentService.getApprovedEvents(studentId);
       res.json({ success: true, data: events });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async participateInEvent(req, res, next) {
+    try {
+      const studentId = req.user.studentId;
+      const { eventId } = req.params;
+      const participationId = await studentService.participateInEvent(studentId, eventId);
+      res.json({ success: true, data: { id: participationId } });
     } catch (error) {
       next(error);
     }

@@ -325,6 +325,47 @@ class AdminController {
       next(error);
     }
   }
+
+  /**
+   * Get pending events
+   */
+  async getPendingEvents(req, res, next) {
+    try {
+      const events = await adminService.getPendingEvents();
+      res.json({ success: true, data: events });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Approve event
+   */
+  async approveEvent(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const adminId = req.user.id;
+      await adminService.approveEvent(eventId, adminId);
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Reject event
+   */
+  async rejectEvent(req, res, next) {
+    try {
+      const { eventId } = req.params;
+      const adminId = req.user.id;
+      const { reason } = req.body;
+      await adminService.rejectEvent(eventId, adminId, reason);
+      res.json({ success: true });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new AdminController();
