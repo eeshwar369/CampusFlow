@@ -3,6 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../services/toast.service';
 
+interface MindMapNode {
+  id: string;
+  name: string;
+  description?: string;
+  subtopics?: string[];
+  children?: MindMapNode[];
+  expanded?: boolean;
+  level?: number;
+}
+
 @Component({
   selector: 'app-mindmap',
   templateUrl: './mindmap.component.html',
@@ -17,6 +27,10 @@ export class MindmapComponent implements OnInit {
   loading = false;
   fileName: string = '';
   uploadProgress = 0;
+  
+  // Tree structure
+  rootNode: MindMapNode | null = null;
+  expandedNodes: Set<string> = new Set();
 
   constructor(
     private http: HttpClient,
@@ -64,6 +78,7 @@ export class MindmapComponent implements OnInit {
       next: (event: any) => {
         if (event.type === 4) { // HttpEventType.Response
           this.mindMapData = event.body;
+          this.buildTreeStructure(event.body);
           this.uploading = false;
           this.uploadProgress = 100;
           this.toast.success('Mind map generated successfully!');
@@ -111,7 +126,9 @@ export class MindmapComponent implements OnInit {
   }
 
   viewMindMap(mindMap: any): void {
-    this.mindMapData = mindMap.mindmap_data ? JSON.parse(mindMap.mindmap_data) : mindMap;
+    const data = mindMap.mindmap_data ? JSON.parse(mindMap.mindmap_data) : mindMap;
+    this.mindMapData = data;
+    this.buildTreeStructure(data);
   }
 
   clearSelection(): void {
@@ -122,5 +139,84 @@ export class MindmapComponent implements OnInit {
 
   clearMindMap(): void {
     this.mindMapData = null;
+    this.rootNode = null;
+    this.expandedNodes.clear();
+  }
+
+  buildTreeStructure(data: any): void {
+    if (!data || !data.topics) return;
+
+    const courseTitle = data.course_info?.title || 'Course Overview';
+    
+    // Create root node
+    this.rootNode = {
+      id: 'root',
+      name: courseTitle,
+      description: data.course_info?.description || 'Click to expand topics',
+      children: [],
+      expanded: false,
+      level: 0
+    };
+
+    // Convert topics to tree nodes
+    data.topics.forEach((topic: any, index: number) => {
+      const topicNode: MindMapNode = {
+        id: `topic-${index}`,
+        name: topic.name || topic.topic,
+        description: topic.description,
+        children: [],
+        expanded: false,
+        level: 1
+      };
+
+      // Add subtopics as children
+      if (topic.subtopics && topic.subtopics.length > 0) {
+        topic.subtopics.forEach((subtopic: string, subIndex: number) => {
+          topicNode.children!.push({
+            id: `topic-${index}-sub-${subIndex}`,
+            name: subtopic,
+            expanded: false,
+            level: 2
+          });
+        });
+      }
+
+      this.rootNode!.children!.push(topicNode);
+    });
+  }
+
+  toggleNode(node: MindMapNode): void {
+    node.expanded = !node.expanded;
+    
+    if (node.expanded) {
+      this.expandedNodes.add(node.id);
+    } else {
+      this.expandedNodes.delete(node.id);
+      // Collapse all children
+      this.collapseChildren(node);
+    }
+  }
+
+  collapseChildren(node: MindMapNode): void {
+    if (node.children) {
+      node.children.forEach(child => {
+        child.expanded = false;
+        this.expandedNodes.delete(child.id);
+        this.collapseChildren(child);
+      });
+    }
+  }
+
+  isExpanded(node: MindMapNode): boolean {
+    return node.expanded || false;
+  }
+
+  hasChildren(node: MindMapNode): boolean {
+    return node.children && node.children.length > 0 || false;
+  }
+
+  getNodeIcon(node: MindMapNode): string {
+    if (!this.hasChildren(node)) return '📄';
+    return this.isExpanded(node) ? '📂' : '📁';
   }
 }

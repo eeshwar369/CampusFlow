@@ -9,6 +9,7 @@ Complete integrated Academic and Examination Management System with AI-powered f
 - **[DEVELOPMENT_GUIDE.md](DEVELOPMENT_GUIDE.md)** - Complete development guide with auto-reload setup ⚡
 - **[SETUP_INSTRUCTIONS.md](SETUP_INSTRUCTIONS.md)** - Initial setup and troubleshooting
 - **[CLUB_FEATURES_COMPLETE.md](CLUB_FEATURES_COMPLETE.md)** - Club management features
+- **[MINDMAP_FEATURE.md](MINDMAP_FEATURE.md)** - Interactive Mind Map feature guide 🗺️
 
 ## 🚀 Quick Start for Development
 
@@ -51,7 +52,12 @@ cd ai-service
 
 ### Student Features
 - Personal Dashboard
-- **AI-Powered Mind Map Generator** - Upload syllabus PDF, get interactive mind maps
+- **AI-Powered Mind Map Generator** - Upload syllabus PDF, get interactive expandable tree-based mind maps 🗺️
+  - Root node expands to show topics
+  - Topics expand to show subtopics
+  - Click-to-expand/collapse functionality
+  - Visual tree structure with animations
+  - Study resources and key concepts
 - Hall Ticket Download
 - Course Enrollment View
 - Fee Payment Status

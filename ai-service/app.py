@@ -55,7 +55,7 @@ def parse_syllabus():
 
 @app.route('/generate-mindmap', methods=['POST'])
 def generate_mindmap_simple():
-    """Generate mind map from uploaded PDF syllabus - Simple endpoint"""
+    """Generate mind map from uploaded PDF syllabus - Intelligent extraction"""
     try:
         from services.pdf_processor import PDFProcessor
         from services.mindmap_service import MindMapService
@@ -83,24 +83,32 @@ def generate_mindmap_simple():
             text = pdf_processor.extract_text(file_path)
             
             if not text or len(text.strip()) < 50:
-                return jsonify({'error': 'Could not extract sufficient text from PDF'}), 400
+                return jsonify({'error': 'Could not extract sufficient text from PDF. Please ensure the PDF contains readable text.'}), 400
             
-            # Generate mind map
+            print(f"Extracted {len(text)} characters from PDF")
+            
+            # Generate mind map with intelligent extraction
             mindmap_service = MindMapService()
             mindmap_data = mindmap_service.generate_mindmap(text)
+            
+            # Check if we got meaningful topics
+            if not mindmap_data.get('topics') or len(mindmap_data['topics']) == 0:
+                return jsonify({'error': 'Could not extract topics from PDF. Please ensure the PDF has a clear structure with headings.'}), 400
             
             # Link study resources
             resources = mindmap_service.link_resources(mindmap_data.get('topics', []))
             
             result = {
-                'course_info': {
+                'course_info': mindmap_data.get('course_info', {
                     'title': file.filename.replace('.pdf', ''),
                     'description': 'Generated from uploaded syllabus'
-                },
+                }),
                 'topics': mindmap_data.get('topics', []),
                 'resources': resources,
                 'key_concepts': mindmap_data.get('key_concepts', [])
             }
+            
+            print(f"Generated mind map with {len(result['topics'])} topics")
             
             # Clean up
             if os.path.exists(file_path):
@@ -112,6 +120,7 @@ def generate_mindmap_simple():
             # Clean up on error
             if os.path.exists(file_path):
                 os.remove(file_path)
+            print(f"Error processing PDF: {str(e)}")
             raise e
     
     except Exception as e:

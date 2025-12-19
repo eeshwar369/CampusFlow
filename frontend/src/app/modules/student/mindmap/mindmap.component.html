@@ -64,36 +64,67 @@
   </div>
 
   <!-- Mind Map Display -->
-  <div *ngIf="mindMapData" class="mindmap-display card">
+  <div *ngIf="mindMapData && rootNode" class="mindmap-display card">
     <div class="card-header">
-      <h3>🗺️ Generated Mind Map</h3>
+      <h3>🗺️ Interactive Mind Map</h3>
       <button class="btn-close" (click)="clearMindMap()">✕</button>
     </div>
     
     <div class="mindmap-content">
-      <!-- Course Info -->
-      <div class="course-info" *ngIf="mindMapData.course_info">
-        <h4>{{ mindMapData.course_info.title || 'Course Overview' }}</h4>
-        <p *ngIf="mindMapData.course_info.description">{{ mindMapData.course_info.description }}</p>
-      </div>
+      <!-- Interactive Tree View -->
+      <div class="tree-container">
+        <div class="tree-instructions">
+          <span class="info-icon">💡</span>
+          <span>Click on any node to expand/collapse its children</span>
+        </div>
 
-      <!-- Topics Tree -->
-      <div class="topics-section">
-        <h4>📚 Topics & Subtopics</h4>
-        <div class="topics-tree">
-          <div *ngFor="let topic of mindMapData.topics; let i = index" class="topic-node">
-            <div class="topic-header">
-              <span class="topic-number">{{ i + 1 }}</span>
-              <h5>{{ topic.name || topic.topic }}</h5>
+        <!-- Root Node -->
+        <div class="tree-view">
+          <div class="tree-node root-node" 
+               [class.expanded]="isExpanded(rootNode)"
+               (click)="toggleNode(rootNode)">
+            <div class="node-content">
+              <span class="node-icon">{{ getNodeIcon(rootNode) }}</span>
+              <div class="node-info">
+                <h4 class="node-title">{{ rootNode.name }}</h4>
+                <p class="node-description" *ngIf="rootNode.description">{{ rootNode.description }}</p>
+              </div>
+              <span class="expand-icon" *ngIf="hasChildren(rootNode)">
+                {{ isExpanded(rootNode) ? '▼' : '▶' }}
+              </span>
             </div>
-            <ul class="subtopics-list" *ngIf="topic.subtopics && topic.subtopics.length > 0">
-              <li *ngFor="let subtopic of topic.subtopics" class="subtopic-item">
-                <span class="bullet">•</span>
-                {{ subtopic }}
-              </li>
-            </ul>
-            <div class="topic-description" *ngIf="topic.description">
-              <p>{{ topic.description }}</p>
+          </div>
+
+          <!-- Child Nodes (Topics) -->
+          <div class="tree-children" *ngIf="isExpanded(rootNode) && rootNode.children">
+            <div *ngFor="let topic of rootNode.children" class="tree-branch">
+              <div class="tree-node topic-node"
+                   [class.expanded]="isExpanded(topic)"
+                   [class.has-children]="hasChildren(topic)"
+                   (click)="toggleNode(topic); $event.stopPropagation()">
+                <div class="node-content">
+                  <span class="node-icon">{{ getNodeIcon(topic) }}</span>
+                  <div class="node-info">
+                    <h5 class="node-title">{{ topic.name }}</h5>
+                    <p class="node-description" *ngIf="topic.description">{{ topic.description }}</p>
+                  </div>
+                  <span class="expand-icon" *ngIf="hasChildren(topic)">
+                    {{ isExpanded(topic) ? '▼' : '▶' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Subtopics -->
+              <div class="tree-children subtopics" *ngIf="isExpanded(topic) && topic.children">
+                <div *ngFor="let subtopic of topic.children" class="tree-node subtopic-node">
+                  <div class="node-content">
+                    <span class="node-icon">{{ getNodeIcon(subtopic) }}</span>
+                    <div class="node-info">
+                      <span class="node-title">{{ subtopic.name }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
