@@ -1,0 +1,110 @@
+<app-header></app-header>
+
+<div class="dashboard-container">
+  <div class="page-header">
+    <h1>🪑 Seating Manager Dashboard</h1>
+    <p>Manage seating allocations and hall ticket generation</p>
+  </div>
+
+  <!-- Quick Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-info">
+        <h3>{{ stats.totalExams }}</h3>
+        <p>Total Exams</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🪑</div>
+      <div class="stat-info">
+        <h3>{{ stats.allocatedExams }}</h3>
+        <p>Allocated Exams</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🎫</div>
+      <div class="stat-info">
+        <h3>{{ stats.pendingTickets }}</h3>
+        <p>Pending Tickets</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <h3>{{ stats.approvedTickets }}</h3>
+        <p>Approved Tickets</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions card">
+    <h2>⚡ Quick Actions</h2>
+    <div class="actions-grid">
+      <button class="action-btn primary" (click)="navigateToExams()">
+        <span class="btn-icon">📝</span>
+        <span class="btn-text">Manage Exams</span>
+        <span class="btn-desc">Create and publish exam schedules</span>
+      </button>
+
+      <button class="action-btn secondary" (click)="navigateToAllocate()">
+        <span class="btn-icon">🪑</span>
+        <span class="btn-text">Allocate Seats</span>
+        <span class="btn-desc">Assign seats to students for exams</span>
+      </button>
+
+      <button class="action-btn tertiary" (click)="navigateToHallTickets()">
+        <span class="btn-icon">🎫</span>
+        <span class="btn-text">Generate Hall Tickets</span>
+        <span class="btn-desc">Create hall tickets with QR codes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Upcoming Exams -->
+  <div class="upcoming-exams card">
+    <h2>📅 Upcoming Exams</h2>
+    
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading exams...</p>
+    </div>
+
+    <div *ngIf="!loading && upcomingExams.length === 0" class="empty-state">
+      <div class="empty-icon">📅</div>
+      <h3>No Upcoming Exams</h3>
+      <p>There are no exams scheduled at the moment</p>
+    </div>
+
+    <div *ngIf="!loading && upcomingExams.length > 0" class="exams-list">
+      <div *ngFor="let exam of upcomingExams" class="exam-item">
+        <div class="exam-info">
+          <h3>{{ exam.exam_name }}</h3>
+          <p class="exam-details">
+            <span class="detail-item">
+              <span class="icon">📚</span>
+              {{ exam.course_name }}
+            </span>
+            <span class="detail-item">
+              <span class="icon">📅</span>
+              {{ exam.exam_date | date:'mediumDate' }}
+            </span>
+            <span class="detail-item">
+              <span class="icon">⏰</span>
+              {{ exam.start_time }} - {{ exam.end_time }}
+            </span>
+          </p>
+        </div>
+        <div class="exam-actions">
+          <button class="btn btn-sm btn-primary" (click)="viewChart(exam.id)">
+            View Chart
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

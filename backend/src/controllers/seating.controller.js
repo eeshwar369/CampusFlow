@@ -1,12 +1,15 @@
 const seatingService = require('../services/seating.service');
+const hallTicketService = require('../services/hallTicket.service');
 
 class SeatingController {
   async allocateSeats(req, res, next) {
     try {
-      const { examId, excludeDetained, spacing } = req.body;
+      const { examId, excludeDetained, spacing, randomize } = req.body;
       const result = await seatingService.allocateSeats(examId, {
         excludeDetained,
-        spacing
+        spacing: parseInt(spacing) || 1,
+        randomize,
+        allocatedBy: req.user.id
       });
       res.json({ success: true, data: result });
     } catch (error) {
@@ -19,6 +22,69 @@ class SeatingController {
       const { examId } = req.params;
       const chart = await seatingService.getSeatingChart(examId);
       res.json({ success: true, data: chart });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSeatingStatistics(req, res, next) {
+    try {
+      const { examId } = req.params;
+      const stats = await seatingService.getSeatingStatistics(examId);
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportSeatingChart(req, res, next) {
+    try {
+      const { examId } = req.params;
+      const csvData = await seatingService.exportSeatingChart(examId);
+      res.json({ success: true, data: csvData });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async generateHallTickets(req, res, next) {
+    try {
+      const { examId, autoApprove } = req.body;
+      const results = await hallTicketService.bulkGenerateForExam(examId, {
+        autoApprove,
+        generatedBy: req.user.id
+      });
+      res.json({ success: true, data: results });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getHallTickets(req, res, next) {
+    try {
+      const { examId } = req.params;
+      const tickets = await hallTicketService.getHallTicketsForExam(examId);
+      res.json({ success: true, data: tickets });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getHallTicketStatistics(req, res, next) {
+    try {
+      const { examId } = req.params;
+      const stats = await hallTicketService.getHallTicketStatistics(examId);
+      res.json({ success: true, data: stats });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async approveHallTickets(req, res, next) {
+    try {
+      const { ticketIds } = req.body;
+      const count = await hallTicketService.bulkApproveHallTickets(ticketIds, req.user.id);
+      res.json({ success: true, data: { approved: count } });
     } catch (error) {
       next(error);
     }

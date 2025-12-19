@@ -1,0 +1,181 @@
+<app-header></app-header>
+
+<div class="hall-ticket-container">
+  <div class="page-header">
+    <h1>🎫 Hall Ticket Generation</h1>
+    <p>Generate hall tickets with QR codes for students</p>
+  </div>
+
+  <!-- Generation Form -->
+  <div class="generation-form card">
+    <h2>Generate Hall Tickets</h2>
+
+    <div class="form-group">
+      <label for="exam">Select Exam *</label>
+      <select 
+        id="exam" 
+        [(ngModel)]="selectedExamId" 
+        (change)="onExamSelect()"
+        [disabled]="generating">
+        <option [ngValue]="null">-- Select Exam --</option>
+        <option *ngFor="let exam of exams" [ngValue]="exam.id">
+          {{ exam.exam_name }} - {{ exam.exam_date | date:'mediumDate' }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="selectedExamId">
+      <label class="checkbox-label">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="autoApprove"
+          [disabled]="generating">
+        <span>Auto-approve tickets after generation</span>
+      </label>
+      <small>Tickets will be automatically approved and ready for download</small>
+    </div>
+
+    <div class="form-actions">
+      <button 
+        class="btn btn-primary btn-lg"
+        (click)="generateHallTickets()"
+        [disabled]="!selectedExamId || generating">
+        <span *ngIf="!generating">🎫 Generate All Tickets</span>
+        <span *ngIf="generating">⏳ Generating...</span>
+      </button>
+
+      <button 
+        class="btn btn-success"
+        (click)="approveSelected()"
+        [disabled]="!selectedExamId || generating || !statistics || statistics.pending === 0">
+        ✅ Approve Pending ({{ statistics?.pending || 0 }})
+      </button>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div *ngIf="statistics" class="statistics-card card">
+    <h2>📊 Hall Ticket Statistics</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-icon">📝</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ statistics.total }}</span>
+          <span class="stat-label">Total Tickets</span>
+        </div>
+      </div>
+
+      <div class="stat-item pending">
+        <span class="stat-icon">⏳</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ statistics.pending }}</span>
+          <span class="stat-label">Pending</span>
+        </div>
+      </div>
+
+      <div class="stat-item approved">
+        <span class="stat-icon">✅</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ statistics.approved }}</span>
+          <span class="stat-label">Approved</span>
+        </div>
+      </div>
+
+      <div class="stat-item delivered">
+        <span class="stat-icon">📬</span>
+        <div class="stat-info">
+          <span class="stat-value">{{ statistics.delivered }}</span>
+          <span class="stat-label">Delivered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generation Result -->
+  <div *ngIf="generated && generationResult" class="result-card card success">
+    <h2>✅ Generation Complete!</h2>
+    
+    <div class="result-summary">
+      <div class="summary-item success">
+        <span class="icon">✅</span>
+        <span class="label">Successfully Generated:</span>
+        <span class="value">{{ generationResult.success.length }}</span>
+      </div>
+
+      <div class="summary-item error" *ngIf="generationResult.failed.length > 0">
+        <span class="icon">❌</span>
+        <span class="label">Failed:</span>
+        <span class="value">{{ generationResult.failed.length }}</span>
+      </div>
+
+      <div class="summary-item">
+        <span class="icon">📊</span>
+        <span class="label">Total Processed:</span>
+        <span class="value">{{ generationResult.total }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="generationResult.failed.length > 0" class="failed-list">
+      <h3>Failed Generations:</h3>
+      <div *ngFor="let failed of generationResult.failed" class="failed-item">
+        <span class="roll">{{ failed.rollNumber }}</span>
+        <span class="error">{{ failed.error }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hall Tickets List -->
+  <div *ngIf="selectedExamId" class="tickets-list card">
+    <h2>📋 Generated Hall Tickets</h2>
+
+    <div *ngIf="loadingTickets" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading tickets...</p>
+    </div>
+
+    <div *ngIf="!loadingTickets && hallTickets.length === 0" class="empty-state">
+      <div class="empty-icon">🎫</div>
+      <h3>No Hall Tickets Generated</h3>
+      <p>Click "Generate All Tickets" to create hall tickets for this exam</p>
+    </div>
+
+    <div *ngIf="!loadingTickets && hallTickets.length > 0" class="tickets-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Roll Number</th>
+            <th>Student Name</th>
+            <th>Ticket Number</th>
+            <th>Seat Number</th>
+            <th>Status</th>
+            <th>Generated</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let ticket of hallTickets">
+            <td>{{ ticket.roll_number }}</td>
+            <td>{{ ticket.first_name }} {{ ticket.last_name }}</td>
+            <td><code>{{ ticket.ticket_number }}</code></td>
+            <td>{{ ticket.seat_number || 'Not Allocated' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+                {{ ticket.status }}
+              </span>
+            </td>
+            <td>{{ ticket.generated_at | date:'short' }}</td>
+            <td>
+              <button 
+                class="btn btn-sm btn-primary"
+                (click)="downloadTicket(ticket)"
+                [disabled]="!ticket.file_path">
+                📥 Download
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

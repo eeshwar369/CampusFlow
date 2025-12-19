@@ -199,7 +199,7 @@ export class AuthService {
         this.router.navigate(['/admin/dashboard']);
         break;
       case 'seating_manager':
-        this.router.navigate(['/seating/dashboard']);
+        this.router.navigate(['/seating-manager']);
         break;
       case 'club_coordinator':
         this.router.navigate(['/club/dashboard']);

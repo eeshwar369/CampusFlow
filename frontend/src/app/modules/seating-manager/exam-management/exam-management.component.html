@@ -1,0 +1,280 @@
+<div class="exam-management">
+  <div class="header">
+    <h2>📝 Exam Management</h2>
+    <button class="btn btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
+      <span class="icon">➕</span> Create New Exam
+    </button>
+  </div>
+
+  <!-- Create Exam Form -->
+  <div class="create-form" *ngIf="showCreateForm">
+    <div class="form-card">
+      <div class="form-header">
+        <h3>Create New Exam</h3>
+        <button class="btn-close" (click)="closeCreateForm()">✕</button>
+      </div>
+
+      <div class="form-body">
+        <!-- Exam Details -->
+        <div class="form-section">
+          <h4>Exam Details</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Exam Name *</label>
+              <input 
+                type="text" 
+                [(ngModel)]="examForm.exam_name" 
+                placeholder="e.g., Mid-Term Examination 2024"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Exam Type *</label>
+              <select [(ngModel)]="examForm.exam_type" class="form-control">
+                <option *ngFor="let type of examTypes" [value]="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Start Date *</label>
+              <input 
+                type="date" 
+                [(ngModel)]="examForm.start_date" 
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>End Date *</label>
+              <input 
+                type="date" 
+                [(ngModel)]="examForm.end_date" 
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Subjects -->
+        <div class="form-section">
+          <h4>Add Subjects</h4>
+          <div class="subject-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Course *</label>
+                <select [(ngModel)]="currentSubject.courseId" class="form-control">
+                  <option [value]="0">Select Course</option>
+                  <option *ngFor="let course of courses" [value]="course.id">
+                    {{ course.code }} - {{ course.name }}
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Exam Date *</label>
+                <input 
+                  type="date" 
+                  [(ngModel)]="currentSubject.examDate" 
+                  class="form-control"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Start Time *</label>
+                <input 
+                  type="time" 
+                  [(ngModel)]="currentSubject.startTime" 
+                  class="form-control"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>End Time *</label>
+                <input 
+                  type="time" 
+                  [(ngModel)]="currentSubject.endTime" 
+                  class="form-control"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Duration (min)</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="currentSubject.durationMinutes" 
+                  class="form-control"
+                  min="30"
+                  max="300"
+                />
+              </div>
+
+              <div class="form-group">
+                <label>Total Marks</label>
+                <input 
+                  type="number" 
+                  [(ngModel)]="currentSubject.totalMarks" 
+                  class="form-control"
+                  min="10"
+                  max="200"
+                />
+              </div>
+            </div>
+
+            <button class="btn btn-secondary" (click)="addSubject()">
+              ➕ Add Subject
+            </button>
+          </div>
+
+          <!-- Added Subjects List -->
+          <div class="subjects-list" *ngIf="subjects.length > 0">
+            <h5>Added Subjects ({{ subjects.length }})</h5>
+            <div class="subject-item" *ngFor="let subject of subjects; let i = index">
+              <div class="subject-info">
+                <strong>{{ getCourseName(subject.courseId) }}</strong>
+                <span>{{ formatDate(subject.examDate) }} | {{ formatTime(subject.startTime) }} - {{ formatTime(subject.endTime) }}</span>
+                <span>{{ subject.durationMinutes }} min | {{ subject.totalMarks }} marks</span>
+              </div>
+              <button class="btn-remove" (click)="removeSubject(i)">🗑️</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <button class="btn btn-secondary" (click)="closeCreateForm()">Cancel</button>
+          <button class="btn btn-primary" (click)="createExam()" [disabled]="loading">
+            {{ loading ? 'Creating...' : 'Create Exam' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exams List -->
+  <div class="exams-list" *ngIf="!showCreateForm && !selectedExam">
+    <div class="loading" *ngIf="loading">Loading exams...</div>
+
+    <div class="empty-state" *ngIf="!loading && exams.length === 0">
+      <p>📝 No exams found</p>
+      <p>Create your first exam to get started</p>
+    </div>
+
+    <div class="exam-grid" *ngIf="!loading && exams.length > 0">
+      <div class="exam-card" *ngFor="let exam of exams" (click)="viewExam(exam)">
+        <div class="exam-header">
+          <h3>{{ exam.exam_name }}</h3>
+          <span class="badge" [ngClass]="getStatusBadgeClass(exam.status)">
+            {{ exam.status }}
+          </span>
+        </div>
+        <div class="exam-body">
+          <div class="exam-info">
+            <span class="info-item">
+              <strong>Type:</strong> {{ exam.exam_type }}
+            </span>
+            <span class="info-item">
+              <strong>Period:</strong> {{ formatDate(exam.start_date) }} - {{ formatDate(exam.end_date) }}
+            </span>
+            <span class="info-item">
+              <strong>Subjects:</strong> {{ exam.subject_count || 0 }}
+            </span>
+            <span class="info-item">
+              <strong>Allocated:</strong> {{ exam.allocated_count || 0 }} students
+            </span>
+          </div>
+        </div>
+        <div class="exam-footer">
+          <span class="created-by">Created by {{ exam.created_by_name }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exam Details -->
+  <div class="exam-details" *ngIf="selectedExam">
+    <div class="details-card">
+      <div class="details-header">
+        <button class="btn-back" (click)="closeExamDetails()">← Back</button>
+        <h2>{{ selectedExam.exam_name }}</h2>
+        <span class="badge" [ngClass]="getStatusBadgeClass(selectedExam.status)">
+          {{ selectedExam.status }}
+        </span>
+      </div>
+
+      <div class="details-body">
+        <div class="info-section">
+          <h3>Exam Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Type:</label>
+              <span>{{ selectedExam.exam_type }}</span>
+            </div>
+            <div class="info-item">
+              <label>Start Date:</label>
+              <span>{{ formatDate(selectedExam.start_date) }}</span>
+            </div>
+            <div class="info-item">
+              <label>End Date:</label>
+              <span>{{ formatDate(selectedExam.end_date) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Status:</label>
+              <span>{{ selectedExam.status }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="schedule-section">
+          <h3>Exam Schedule</h3>
+          <div class="schedule-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Course</th>
+                  <th>Time</th>
+                  <th>Duration</th>
+                  <th>Marks</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of selectedExam.schedule">
+                  <td>{{ formatDate(item.exam_date) }}</td>
+                  <td>{{ item.course_code }} - {{ item.course_name }}</td>
+                  <td>{{ formatTime(item.start_time) }} - {{ formatTime(item.end_time) }}</td>
+                  <td>{{ item.duration_minutes }} min</td>
+                  <td>{{ item.total_marks }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="actions-section">
+          <button 
+            class="btn btn-success" 
+            (click)="publishExam(selectedExam.id!)"
+            *ngIf="selectedExam.status === 'draft'"
+            [disabled]="loading"
+          >
+            📢 Publish Exam
+          </button>
+          <button 
+            class="btn btn-danger" 
+            (click)="deleteExam(selectedExam.id!)"
+            [disabled]="loading"
+          >
+            🗑️ Delete Exam
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

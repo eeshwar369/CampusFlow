@@ -26,15 +26,20 @@ class StudentService {
       WHERE ce.student_id = ?
     `, [studentId]);
 
-    // Get upcoming exams
+    // Get upcoming exams (published exams with student's enrolled courses)
     const [exams] = await db.query(`
-      SELECT e.*, c.name as course_name, c.code as course_code
+      SELECT DISTINCT e.id, e.exam_name, e.exam_type, e.start_date, e.end_date,
+             es.exam_date, es.start_time, es.end_time,
+             c.name as course_name, c.code as course_code
       FROM exams e
-      JOIN courses c ON e.course_id = c.id
-      WHERE e.exam_date >= CURDATE()
-      ORDER BY e.exam_date ASC
+      JOIN exam_schedule es ON e.id = es.exam_id
+      JOIN courses c ON es.course_id = c.id
+      JOIN course_enrollments ce ON c.id = ce.course_id
+      WHERE ce.student_id = ? AND ce.status = 'enrolled' 
+        AND e.status = 'published' AND es.exam_date >= CURDATE()
+      ORDER BY es.exam_date ASC, es.start_time ASC
       LIMIT 5
-    `, []);
+    `, [studentId]);
 
     // Get recent notifications
     const [notifications] = await db.query(`

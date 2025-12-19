@@ -73,6 +73,7 @@ class AdminService {
       SELECT * FROM courses
       ORDER BY department, semester, name
     `);
+    console.log("the curses are:", courses);
     return courses;
   }
 

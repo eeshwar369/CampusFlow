@@ -98,4 +98,26 @@ export class AdminService {
   rejectEvent(eventId: number, reason: string): Observable<any> {
     return this.http.put(`${this.apiUrl}/events/${eventId}/reject`, { reason });
   }
+
+  getCourses(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/courses`);
+  }
+
+  getRooms(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/rooms`);
+  }
+
+  getExams(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/exams`);
+  }
+
+  exportStudents(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/students/export`, { responseType: 'blob' });
+  }
+
+  importStudents(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(`${this.apiUrl}/students/import`, formData);
+  }
 }

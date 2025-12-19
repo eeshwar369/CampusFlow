@@ -1,0 +1,116 @@
+<app-header></app-header>
+
+<div class="allocation-container">
+  <div class="page-header">
+    <h1>🪑 Seat Allocation</h1>
+    <p>Intelligently allocate seats for exams with configurable spacing</p>
+  </div>
+
+  <div class="allocation-form card">
+    <h2>Configuration</h2>
+
+    <!-- Exam Selection -->
+    <div class="form-group">
+      <label for="exam">Select Exam *</label>
+      <select 
+        id="exam" 
+        [(ngModel)]="config.examId" 
+        (change)="onExamSelect()"
+        [disabled]="allocating">
+        <option [ngValue]="null">-- Select Exam --</option>
+        <option *ngFor="let exam of exams" [ngValue]="exam.id">
+          {{ exam.exam_name }} ({{ exam.start_date | date:'mediumDate' }} - {{ exam.end_date | date:'mediumDate' }})
+        </option>
+      </select>
+    </div>
+
+    <!-- Spacing Configuration -->
+    <div class="form-group">
+      <label for="spacing">Seat Spacing</label>
+      <select id="spacing" [(ngModel)]="config.spacing" [disabled]="allocating">
+        <option [ngValue]="1">1 seat apart (Normal)</option>
+        <option [ngValue]="2">2 seats apart (Social Distancing)</option>
+        <option [ngValue]="3">3 seats apart (Maximum Spacing)</option>
+      </select>
+      <small>Determines how many seats to leave between students</small>
+    </div>
+
+    <!-- Options -->
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="config.excludeDetained"
+          [disabled]="allocating">
+        <span>Exclude Detained Students</span>
+      </label>
+      <small>Students with detained status will not be allocated seats</small>
+    </div>
+
+    <div class="form-group">
+      <label class="checkbox-label">
+        <input 
+          type="checkbox" 
+          [(ngModel)]="config.randomize"
+          [disabled]="allocating">
+        <span>Randomize Seating</span>
+      </label>
+      <small>Randomly assign seats instead of alphabetical order</small>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button 
+        class="btn btn-primary btn-lg"
+        (click)="allocateSeats()"
+        [disabled]="!config.examId || allocating">
+        <span *ngIf="!allocating">🪑 Allocate Seats</span>
+        <span *ngIf="allocating">⏳ Allocating...</span>
+      </button>
+
+      <button 
+        class="btn btn-secondary"
+        (click)="clearAllocations()"
+        [disabled]="!config.examId || allocating || !allocated">
+        🗑️ Clear Allocations
+      </button>
+    </div>
+  </div>
+
+  <!-- Allocation Result -->
+  <div *ngIf="allocated && allocationResult" class="result-card card success">
+    <h2>✅ Allocation Successful!</h2>
+    
+    <div class="result-stats">
+      <div class="stat-item">
+        <span class="stat-label">Total Students:</span>
+        <span class="stat-value">{{ allocationResult.totalStudents }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Seats Allocated:</span>
+        <span class="stat-value">{{ allocationResult.allocated }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Rooms Used:</span>
+        <span class="stat-value">{{ allocationResult.roomsUsed }}</span>
+      </div>
+      <div class="stat-item" *ngIf="allocationResult.excluded > 0">
+        <span class="stat-label">Excluded (Detained):</span>
+        <span class="stat-value">{{ allocationResult.excluded }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Spacing:</span>
+        <span class="stat-value">{{ allocationResult.spacing }} seat(s)</span>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-primary" (click)="viewChart()">
+        📊 View Seating Chart
+      </button>
+      <button class="btn btn-secondary" (click)="router.navigate(['/seating-manager/hall-tickets'])">
+        🎫 Generate Hall Tickets
+      </button>
+    </div>
+  </div>
+</div>

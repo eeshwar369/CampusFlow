@@ -2,10 +2,17 @@ const db = require('../config/database');
 
 class SeatingService {
   /**
-   * Allocate seats for an exam
+   * Allocate seats for an exam with intelligent distribution
    */
   async allocateSeats(examId, options = {}) {
-    const { excludeDetained = true, spacing = 1 } = options;
+    const { 
+      excludeDetained = true, 
+      spacing = 1, 
+      randomize = false,
+      allocatedBy 
+    } = options;
+
+    console.log('Allocating seats for exam:', examId, 'with options:', options);
 
     // Get exam details
     const [exams] = await db.query('SELECT * FROM exams WHERE id = ?', [examId]);
@@ -13,14 +20,32 @@ class SeatingService {
       throw new Error('Exam not found');
     }
 
-    // Get eligible students
+    console.log('Exam found:', exams[0].exam_name);
+
+    // Get course IDs from exam schedule
+    const [examSchedule] = await db.query(`
+      SELECT DISTINCT course_id FROM exam_schedule WHERE exam_id = ?
+    `, [examId]);
+
+    if (examSchedule.length === 0) {
+      throw new Error('No subjects found for this exam');
+    }
+
+    const courseIds = examSchedule.map(s => s.course_id);
+    console.log('Courses in exam:', courseIds);
+
+    // Get eligible students enrolled in exam courses
     let studentQuery = `
-      SELECT DISTINCT s.id, s.roll_number
+      SELECT DISTINCT s.id, s.roll_number, u.first_name, u.last_name
       FROM students s
+      JOIN users u ON s.user_id = u.id
       JOIN course_enrollments ce ON s.id = ce.student_id
-      JOIN exams e ON ce.course_id = e.course_id
-      WHERE e.id = ?
+      WHERE ce.course_id IN (?) 
+        AND ce.status = 'enrolled'
+        AND u.is_active = true
     `;
+
+    const queryParams = [courseIds];
 
     if (excludeDetained) {
       studentQuery += `
@@ -31,19 +56,24 @@ class SeatingService {
       `;
     }
 
-    studentQuery += ' ORDER BY s.roll_number';
+    studentQuery += randomize ? ' ORDER BY RAND()' : ' ORDER BY s.roll_number';
 
-    const [students] = await db.query(studentQuery, [examId]);
+    const [students] = await db.query(studentQuery, queryParams);
+
+    console.log('Eligible students found:', students.length);
 
     if (students.length === 0) {
-      throw new Error('No eligible students found');
+      throw new Error('No eligible students found for this exam');
     }
 
     // Get available rooms
     const [rooms] = await db.query(`
-      SELECT * FROM rooms WHERE is_available = true
+      SELECT * FROM rooms 
+      WHERE is_available = true
       ORDER BY capacity DESC
     `);
+
+    console.log('Available rooms:', rooms.length);
 
     if (rooms.length === 0) {
       throw new Error('No rooms available');
@@ -54,9 +84,17 @@ class SeatingService {
       return sum + Math.floor(room.capacity / spacing);
     }, 0);
 
+    console.log('Effective capacity:', effectiveCapacity, 'Students needed:', students.length);
+
     if (effectiveCapacity < students.length) {
-      throw new Error(`Insufficient capacity. Need ${students.length} seats, have ${effectiveCapacity}`);
+      throw new Error(
+        `Insufficient capacity. Need ${students.length} seats, have ${effectiveCapacity} with spacing ${spacing}`
+      );
     }
+
+    // Clear existing allocations for this exam
+    await db.query('DELETE FROM seating_allocations WHERE exam_id = ?', [examId]);
+    console.log('Cleared existing allocations');
 
     // Allocate seats
     const allocations = [];
@@ -67,14 +105,15 @@ class SeatingService {
       
       for (let seat = 1; seat <= roomCapacity && studentIndex < students.length; seat++) {
         const student = students[studentIndex];
-        const seatNumber = `${room.room_name}-${seat}`;
+        const seatNumber = `${room.room_name}-${String(seat).padStart(3, '0')}`;
 
         allocations.push([
           examId,
           student.id,
           room.id,
           seatNumber,
-          seat
+          seat,
+          allocatedBy || 1
         ]);
 
         studentIndex++;
@@ -83,32 +122,48 @@ class SeatingService {
       if (studentIndex >= students.length) break;
     }
 
+    console.log('Allocations prepared:', allocations.length);
+
     // Insert allocations
     if (allocations.length > 0) {
       await db.query(`
         INSERT INTO seating_allocations
-        (exam_id, student_id, room_id, seat_number, seat_position)
+        (exam_id, student_id, room_id, seat_number, seat_position, allocated_by)
         VALUES ?
       `, [allocations]);
+      console.log('Allocations inserted successfully');
     }
 
     // Count excluded detained students
     const [detainedCount] = await db.query(`
-      SELECT COUNT(*) as count FROM student_academic_status
-      WHERE status = 'detained'
+      SELECT COUNT(DISTINCT s.id) as count 
+      FROM students s
+      JOIN student_academic_status sas ON s.id = sas.student_id
+      WHERE sas.status = 'detained'
     `);
 
-    return {
+    const roomsUsed = rooms.filter((_, idx) => {
+      const roomStart = rooms.slice(0, idx).reduce((sum, r) => 
+        sum + Math.floor(r.capacity / spacing), 0);
+      return roomStart < allocations.length;
+    }).length;
+
+    const result = {
       examId,
       totalStudents: students.length,
       allocated: allocations.length,
       excluded: excludeDetained ? detainedCount[0].count : 0,
-      roomsUsed: Math.ceil(allocations.length / (rooms[0]?.capacity || 1))
+      roomsUsed,
+      spacing,
+      randomized: randomize
     };
+
+    console.log('Allocation result:', result);
+    return result;
   }
 
   /**
-   * Get seating chart for an exam
+   * Get seating chart for an exam with room-wise breakdown
    */
   async getSeatingChart(examId) {
     const [allocations] = await db.query(`
@@ -129,16 +184,20 @@ class SeatingService {
     allocations.forEach(allocation => {
       if (!roomMap[allocation.room_name]) {
         roomMap[allocation.room_name] = {
+          room_id: allocation.room_id,
           room_name: allocation.room_name,
           building: allocation.building,
           floor: allocation.floor,
           capacity: allocation.capacity,
+          allocated: 0,
           students: []
         };
         rooms.push(roomMap[allocation.room_name]);
       }
       
+      roomMap[allocation.room_name].allocated++;
       roomMap[allocation.room_name].students.push({
+        student_id: allocation.student_id,
         seat_number: allocation.seat_number,
         seat_position: allocation.seat_position,
         roll_number: allocation.roll_number,
@@ -146,7 +205,70 @@ class SeatingService {
       });
     });
 
-    return { rooms };
+    return { 
+      rooms,
+      totalAllocated: allocations.length,
+      totalRooms: rooms.length
+    };
+  }
+
+  /**
+   * Get seating statistics
+   */
+  async getSeatingStatistics(examId) {
+    const [stats] = await db.query(`
+      SELECT 
+        COUNT(DISTINCT sa.room_id) as rooms_used,
+        COUNT(sa.id) as total_allocated,
+        COUNT(DISTINCT sa.student_id) as unique_students,
+        MIN(sa.seat_position) as min_seat,
+        MAX(sa.seat_position) as max_seat
+      FROM seating_allocations sa
+      WHERE sa.exam_id = ?
+    `, [examId]);
+
+    const [roomStats] = await db.query(`
+      SELECT 
+        r.room_name,
+        r.capacity,
+        COUNT(sa.id) as allocated,
+        ROUND((COUNT(sa.id) / r.capacity) * 100, 2) as utilization
+      FROM rooms r
+      LEFT JOIN seating_allocations sa ON r.id = sa.room_id AND sa.exam_id = ?
+      WHERE r.is_available = true
+      GROUP BY r.id
+      ORDER BY allocated DESC
+    `, [examId]);
+
+    return {
+      overall: stats[0],
+      byRoom: roomStats
+    };
+  }
+
+  /**
+   * Export seating chart as CSV data
+   */
+  async exportSeatingChart(examId) {
+    const chart = await this.getSeatingChart(examId);
+    
+    const csvData = [];
+    csvData.push(['Room', 'Building', 'Floor', 'Seat Number', 'Roll Number', 'Student Name']);
+    
+    chart.rooms.forEach(room => {
+      room.students.forEach(student => {
+        csvData.push([
+          room.room_name,
+          room.building,
+          room.floor,
+          student.seat_number,
+          student.roll_number,
+          student.name
+        ]);
+      });
+    });
+    
+    return csvData;
   }
 
   /**
@@ -250,11 +372,11 @@ class SeatingService {
       SELECT r.*, 
              CASE WHEN EXISTS (
                SELECT 1 FROM seating_allocations sa
-               JOIN exams e ON sa.exam_id = e.id
+               JOIN exam_schedule es ON sa.exam_id = es.exam_id
                WHERE sa.room_id = r.id
-               AND e.exam_date = ?
-               AND e.start_time < ?
-               AND e.end_time > ?
+               AND es.exam_date = ?
+               AND es.start_time < ?
+               AND es.end_time > ?
              ) THEN false ELSE true END as available
       FROM rooms r
       WHERE r.is_available = true

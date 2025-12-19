@@ -29,6 +29,12 @@ const routes: Routes = [
     canActivate: [AuthGuard], 
     data: { roles: ['club_coordinator'] } 
   },
+  { 
+    path: 'seating-manager', 
+    loadChildren: () => import('./modules/seating-manager/seating-manager.module').then(m => m.SeatingManagerModule), 
+    canActivate: [AuthGuard], 
+    data: { roles: ['seating_manager', 'admin'] } 
+  },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/login' }
 ];

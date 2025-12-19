@@ -88,4 +88,13 @@ export class StudentService {
   participateInEvent(eventId: number): Observable<any> {
     return this.http.post(`${this.apiUrl}/events/${eventId}/participate`, {});
   }
+
+  // Exam Timetable
+  getExams(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/exams`);
+  }
+
+  getExamTimetable(examId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/exams/${examId}/timetable`);
+  }
 }

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const studentController = require('../controllers/student.controller');
+const examController = require('../controllers/exam.controller');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 const multer = require('multer');
 
@@ -16,6 +17,10 @@ router.get('/dashboard', studentController.getDashboard);
 // Courses
 router.get('/courses', studentController.getCourses);
 router.get('/courses/:courseId/materials', studentController.getCourseMaterials);
+
+// Exams
+router.get('/exams', examController.getStudentExams);
+router.get('/exams/:examId/timetable', examController.getExamTimetable);
 
 // Performance
 router.get('/performance', studentController.getPerformance);

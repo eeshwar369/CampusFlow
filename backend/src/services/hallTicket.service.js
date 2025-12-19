@@ -205,20 +205,56 @@ class HallTicketService {
   }
 
   /**
-   * Bulk generate hall tickets
+   * Bulk generate hall tickets for an exam
    */
-  async bulkGenerateHallTickets(examId, studentIds) {
+  async bulkGenerateForExam(examId, options = {}) {
+    const { autoApprove = false, generatedBy } = options;
+
+    // Get all students enrolled in the exam's course
+    const [students] = await db.query(`
+      SELECT DISTINCT s.id, s.roll_number
+      FROM students s
+      JOIN course_enrollments ce ON s.id = ce.student_id
+      JOIN exams e ON ce.course_id = e.course_id
+      WHERE e.id = ? AND ce.status = 'enrolled'
+      AND s.id NOT IN (
+        SELECT student_id FROM student_academic_status
+        WHERE status = 'detained'
+      )
+      ORDER BY s.roll_number
+    `, [examId]);
+
+    if (students.length === 0) {
+      throw new Error('No eligible students found for this exam');
+    }
+
     const results = {
       success: [],
-      failed: []
+      failed: [],
+      total: students.length
     };
 
-    for (const studentId of studentIds) {
+    for (const student of students) {
       try {
-        const ticket = await this.generateHallTicket(studentId, examId);
-        results.success.push({ studentId, ticket });
+        const ticket = await this.generateHallTicket(student.id, examId);
+        
+        // Auto-approve if requested
+        if (autoApprove && generatedBy) {
+          await this.approveHallTicket(ticket.id, generatedBy);
+        }
+        
+        results.success.push({ 
+          studentId: student.id, 
+          rollNumber: student.roll_number,
+          ticketId: ticket.id,
+          ticketNumber: ticket.ticketNumber 
+        });
       } catch (error) {
-        results.failed.push({ studentId, error: error.message });
+        results.failed.push({ 
+          studentId: student.id, 
+          rollNumber: student.roll_number,
+          error: error.message 
+        });
       }
     }
 
@@ -226,20 +262,55 @@ class HallTicketService {
   }
 
   /**
-   * Get hall ticket by student and exam
+   * Get hall tickets for an exam
    */
-  async getHallTicket(studentId, examId) {
+  async getHallTicketsForExam(examId) {
     const [tickets] = await db.query(`
-      SELECT ht.*, e.exam_name, s.roll_number
+      SELECT ht.*, s.roll_number, u.first_name, u.last_name,
+             e.exam_name, e.exam_date, e.start_time, e.end_time,
+             sa.seat_number, r.room_name
       FROM hall_tickets ht
-      JOIN exams e ON ht.exam_id = e.id
       JOIN students s ON ht.student_id = s.id
-      WHERE ht.student_id = ? AND ht.exam_id = ?
-      ORDER BY ht.generated_at DESC
-      LIMIT 1
-    `, [studentId, examId]);
+      JOIN users u ON s.user_id = u.id
+      JOIN exams e ON ht.exam_id = e.id
+      LEFT JOIN seating_allocations sa ON ht.student_id = sa.student_id AND ht.exam_id = sa.exam_id
+      LEFT JOIN rooms r ON sa.room_id = r.id
+      WHERE ht.exam_id = ?
+      ORDER BY s.roll_number
+    `, [examId]);
 
-    return tickets.length > 0 ? tickets[0] : null;
+    return tickets;
+  }
+
+  /**
+   * Get hall ticket statistics
+   */
+  async getHallTicketStatistics(examId) {
+    const [stats] = await db.query(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+        SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+        SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered
+      FROM hall_tickets
+      WHERE exam_id = ?
+    `, [examId]);
+
+    return stats[0];
+  }
+
+  /**
+   * Bulk approve hall tickets
+   */
+  async bulkApproveHallTickets(ticketIds, adminId) {
+    const [result] = await db.query(`
+      UPDATE hall_tickets 
+      SET status = 'approved', approved_by = ?, approved_at = NOW()
+      WHERE id IN (?) AND status = 'pending'
+    `, [adminId, ticketIds]);
+
+    return result.affectedRows;
   }
 }
 
