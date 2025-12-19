@@ -1,40 +1,40 @@
 Roles:
 1.Student
 2.Admin
-3.Seatng Manager 
-4.Faculty 
+3.Faculty 
+4.Seatng Manager 
 5.Club Coordinator 
 
 Features of each role
-i. Student :
--> Course/curriculum information
--> Hall ticket generation
--> Circular and Notifications 
--> Club Information
--> Feedback for Faculty
--> Self-performance analysis
+i. Student:
+-> Access to course and curriculum information.
+-> Generation of hall tickets.
+-> Viewing circulars and notifications.
+-> Access to club information.
+-> Submitting faculty feedback.
+-> Self-performance analysis and progress tracking.
 
 ii. Admin:
--> Approval of Fee/Hall ticket
--> Providing circulars and Notifications
--> Deciding the Courses and Curiculum
--> Providing Time tables
--> Providing analysis for all roles 
+-> Approval of fee payments and hall tickets.
+-> Publishing circulars and notifications.
+-> Designing and updating courses and curriculum.
+-> Providing academic timetables.
+-> Generating analytical reports for all user roles.
 
 iii. Faculty:
--> Providing materials and assignments
--> Conducting tests
--> Remarks for Students
--> Analysis of Students performance
--> Posting Attendance
--> Achievements(previous works done by the Faculty)
+-> Uploading study materials and assignments.
+-> Conducting tests and evaluations.
+-> Providing student remarks and feedback.
+-> Analyzing student performance.
+-> Posting and managing attendance records.
+-> Showcasing achievements and previous academic work.
 
 iv. Seating Coordinator:
--> Analyzing blueprints
--> Allocation seating for Students
+-> Reviewing and analyzing seating blueprints.
+-> Allocating seating arrangements for students.
 
 v. Club Coordinator:
--> Club member details
--> Events information
--> Approval of invitations
--> Achivements of the Club
+-> Managing club member details.
+-> Organizing and updating event information.
+-> Approving event invitations.
+-> Recording and displaying club achievements.
