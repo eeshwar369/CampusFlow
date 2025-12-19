@@ -5,8 +5,9 @@ Roles:
 4.Faculty 
 5.Club Coordinator 
 
-
-Student :
+Features of each role
+i.Student :
+->Course/curriculum information
 
 
 
