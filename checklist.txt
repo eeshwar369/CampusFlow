@@ -28,12 +28,14 @@ iii. Faculty:
 -> Analyzing student performance.
 -> Posting and managing attendance records.
 -> Showcasing achievements and previous academic work.
+-> Preparation of key sheet.
 
 iv. Exam Controller:
 -> Reviewing and analyzing seating blueprints.
 -> Allocating seating arrangements for students.
 -> Generation of hall tickets.
 -> Examination Notification.
+-> Allocation of exam Evaluation for Faculty.
 
 v. Club Coordinator:
 -> Managing club member details.
