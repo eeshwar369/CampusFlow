@@ -2,7 +2,7 @@ Roles:
 1.Student
 2.Admin
 3.Faculty 
-4.Seatng Coordinator ~
+4.Seatng Coordinator 
 5.Club Coordinator 
 
 Features of each role
