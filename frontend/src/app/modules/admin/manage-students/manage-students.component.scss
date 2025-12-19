@@ -1,0 +1,186 @@
+.manage-students-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  h2 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .filters {
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      align-items: end;
+
+      .form-group {
+        label {
+          display: block;
+          margin-bottom: 5px;
+          font-weight: 500;
+          color: #333;
+        }
+
+        select {
+          width: 100%;
+          padding: 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+
+        button {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+          font-weight: 600;
+
+          &.btn-primary {
+            background: #007bff;
+            color: white;
+
+            &:hover {
+              background: #0056b3;
+            }
+          }
+
+          &.btn-secondary {
+            background: #6c757d;
+            color: white;
+
+            &:hover {
+              background: #5a6268;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .loading, .error-message, .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+
+  .error-message {
+    color: #dc3545;
+    background: #f8d7da;
+    border-radius: 4px;
+  }
+
+  .students-table {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background: #f8f9fa;
+
+        th {
+          padding: 12px;
+          text-align: left;
+          font-weight: 600;
+          color: #333;
+          border-bottom: 2px solid #dee2e6;
+        }
+      }
+
+      tbody {
+        tr {
+          border-bottom: 1px solid #dee2e6;
+
+          &:hover {
+            background: #f8f9fa;
+          }
+
+          td {
+            padding: 12px;
+            color: #666;
+
+            &.actions {
+              display: flex;
+              gap: 5px;
+              flex-wrap: wrap;
+            }
+
+            .status-badge {
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: bold;
+
+              &.status-active {
+                background: #d4edda;
+                color: #155724;
+              }
+
+              &.status-detained {
+                background: #f8d7da;
+                color: #721c24;
+              }
+
+              &.status-promoted {
+                background: #d1ecf1;
+                color: #0c5460;
+              }
+            }
+
+            .btn-sm {
+              padding: 4px 8px;
+              font-size: 12px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              font-weight: 600;
+
+              &.btn-success {
+                background: #28a745;
+                color: white;
+
+                &:hover {
+                  background: #218838;
+                }
+              }
+
+              &.btn-warning {
+                background: #ffc107;
+                color: #333;
+
+                &:hover {
+                  background: #e0a800;
+                }
+              }
+
+              &.btn-info {
+                background: #17a2b8;
+                color: white;
+
+                &:hover {
+                  background: #138496;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

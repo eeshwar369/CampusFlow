@@ -63,13 +63,22 @@ export class AuthService {
   }
 
   /**
-   * Clear authentication data
+   * Clear authentication data and prevent back navigation
    */
   private clearAuthData(): void {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
+    localStorage.clear(); // Clear all localStorage
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    
+    // Navigate to login and replace history to prevent back button
+    this.router.navigate(['/login'], { replaceUrl: true }).then(() => {
+      // Clear browser history
+      window.history.pushState(null, '', window.location.href);
+      window.onpopstate = () => {
+        window.history.pushState(null, '', window.location.href);
+      };
+    });
   }
 
   /**
@@ -125,5 +134,60 @@ export class AuthService {
   hasAnyRole(roles: string[]): boolean {
     const user = this.currentUserValue;
     return user ? roles.includes(user.role) : false;
+  }
+
+  /**
+   * Get all roles for current user
+   */
+  getUserRoles(): string[] {
+    const user = this.currentUserValue;
+    return user?.roles || (user?.role ? [user.role] : []);
+  }
+
+  /**
+   * Switch active role
+   */
+  switchRole(newRole: string): void {
+    const user = this.currentUserValue;
+    if (!user) return;
+
+    const userRoles = this.getUserRoles();
+    if (!userRoles.includes(newRole)) {
+      console.error('User does not have access to role:', newRole);
+      return;
+    }
+
+    // Update active role
+    const updatedUser = { ...user, role: newRole, activeRole: newRole };
+    localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+    this.currentUserSubject.next(updatedUser);
+
+    // Navigate to appropriate dashboard
+    this.navigateToDashboard(newRole);
+  }
+
+  /**
+   * Navigate to dashboard based on role
+   */
+  private navigateToDashboard(role: string): void {
+    switch (role) {
+      case 'student':
+        this.router.navigate(['/student/dashboard']);
+        break;
+      case 'faculty':
+        this.router.navigate(['/faculty/dashboard']);
+        break;
+      case 'admin':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'seating_manager':
+        this.router.navigate(['/seating/dashboard']);
+        break;
+      case 'club_coordinator':
+        this.router.navigate(['/club/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/']);
+    }
   }
 }

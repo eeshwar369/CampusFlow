@@ -1,0 +1,25 @@
+<div class="header" *ngIf="currentUser">
+  <div class="header-left">
+    <div class="user-info">
+      <span class="user-avatar">{{ currentUser.firstName?.charAt(0) }}{{ currentUser.lastName?.charAt(0) }}</span>
+      <span class="user-name">{{ getUserDisplayName() }}</span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Role Switcher -->
+    <app-role-switcher></app-role-switcher>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" (click)="toggleTheme()" title="Toggle Dark Mode">
+      <span *ngIf="!isDarkMode">🌙</span>
+      <span *ngIf="isDarkMode">☀️</span>
+    </button>
+
+    <!-- Logout Button -->
+    <button class="logout-btn" (click)="logout()" title="Logout">
+      <span class="logout-icon">🚪</span>
+      <span class="logout-text">Logout</span>
+    </button>
+  </div>
+</div>

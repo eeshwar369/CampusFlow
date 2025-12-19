@@ -1,0 +1,117 @@
+<div class="event-management-container">
+  <h2>Event Management</h2>
+  <p class="subtitle">Manage club events with flexible scheduling and participant notifications</p>
+
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <!-- Edit Event Form -->
+  <div *ngIf="editMode" class="edit-form card">
+    <h3>Edit Event</h3>
+    
+    <div class="form-group">
+      <label>Event Title</label>
+      <input type="text" [(ngModel)]="eventForm.title">
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="eventForm.description" rows="3"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" [(ngModel)]="eventForm.eventDate">
+      </div>
+
+      <div class="form-group">
+        <label>Time</label>
+        <input type="time" [(ngModel)]="eventForm.eventTime">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Venue</label>
+      <input type="text" [(ngModel)]="eventForm.venue">
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <select [(ngModel)]="eventForm.status">
+        <option value="scheduled">Scheduled</option>
+        <option value="rescheduled">Rescheduled</option>
+        <option value="cancelled">Cancelled</option>
+        <option value="completed">Completed</option>
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button (click)="updateEvent()" class="btn-primary">Save Changes</button>
+      <button (click)="cancelEdit()" class="btn-secondary">Cancel</button>
+    </div>
+
+    <div class="info-box">
+      <p><strong>Note:</strong> All registered participants will be notified of any changes.</p>
+    </div>
+  </div>
+
+  <!-- Events List -->
+  <div class="events-list">
+    <div *ngIf="loading" class="loading">Loading events...</div>
+
+    <div *ngIf="!loading && events.length === 0" class="empty-state">
+      No events found.
+    </div>
+
+    <div *ngFor="let event of events" class="event-card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="status-badge" [ngClass]="'status-' + event.status">
+          {{ event.status }}
+        </span>
+      </div>
+
+      <div class="event-details">
+        <p class="description">{{ event.description }}</p>
+        
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="icon">📅</span>
+            <span>{{ event.event_date | date:'fullDate' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="icon">🕐</span>
+            <span>{{ event.event_time }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="icon">📍</span>
+            <span>{{ event.venue }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="icon">👥</span>
+            <span>{{ event.participant_count || 0 }} participants</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-actions">
+        <button (click)="rescheduleEvent(event)" 
+                class="btn-action"
+                [disabled]="event.status === 'cancelled' || event.status === 'completed'">
+          Reschedule
+        </button>
+        <button (click)="cancelEvent(event)" 
+                class="btn-action btn-danger"
+                [disabled]="event.status === 'cancelled' || event.status === 'completed'">
+          Cancel
+        </button>
+        <button (click)="viewParticipants(event.id)" class="btn-action">
+          View Participants
+        </button>
+        <button (click)="viewChangeLog(event.id)" class="btn-action">
+          Change Log
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -22,38 +22,160 @@ def health_check():
 @app.route('/api/ai/parse-syllabus', methods=['POST'])
 def parse_syllabus():
     """Parse syllabus document and extract topics"""
-    # Implementation will be added in later tasks
-    return jsonify({
-        'success': True,
-        'message': 'Syllabus parsing endpoint - to be implemented'
-    })
+    try:
+        from services.pdf_processor import PDFProcessor
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if not file or file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Save uploaded file
+        upload_folder = 'uploads/syllabus'
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, file.filename)
+        file.save(file_path)
+        
+        # Extract text from PDF
+        pdf_processor = PDFProcessor()
+        text = pdf_processor.extract_text(file_path)
+        topics = pdf_processor.extract_topics(text)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'text': text[:500],  # First 500 chars
+                'topics': topics
+            }
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ai/generate-mindmap', methods=['POST'])
 def generate_mindmap():
     """Generate mind map from extracted topics"""
-    # Implementation will be added in later tasks
-    return jsonify({
-        'success': True,
-        'message': 'Mind map generation endpoint - to be implemented'
-    })
+    try:
+        from services.mindmap_service import MindMapService
+        from services.pdf_processor import PDFProcessor
+        
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        course_id = request.form.get('courseId')
+        student_id = request.form.get('studentId')
+        
+        if not file or file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Save uploaded file
+        upload_folder = 'uploads/syllabus'
+        os.makedirs(upload_folder, exist_ok=True)
+        file_path = os.path.join(upload_folder, file.filename)
+        file.save(file_path)
+        
+        # Extract text from PDF
+        pdf_processor = PDFProcessor()
+        text = pdf_processor.extract_text(file_path)
+        
+        # Generate mind map
+        mindmap_service = MindMapService()
+        mindmap_data = mindmap_service.generate_mindmap(text)
+        
+        # Link study resources
+        resources = mindmap_service.link_resources(mindmap_data['topics'])
+        
+        result = {
+            'mindmap': mindmap_data,
+            'resources': resources,
+            'courseId': course_id,
+            'studentId': student_id
+        }
+        
+        return jsonify({'success': True, 'data': result})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ai/find-references', methods=['POST'])
 def find_references():
     """Find reference links for topics"""
-    # Implementation will be added in later tasks
-    return jsonify({
-        'success': True,
-        'message': 'Reference finder endpoint - to be implemented'
-    })
+    try:
+        data = request.get_json()
+        topics = data.get('topics', [])
+        
+        if not topics:
+            return jsonify({'error': 'No topics provided'}), 400
+        
+        from services.mindmap_service import MindMapService
+        mindmap_service = MindMapService()
+        
+        resources = []
+        for topic in topics:
+            topic_resources = {
+                'topic': topic,
+                'resources': [
+                    {
+                        'type': 'video',
+                        'title': f"Learn {topic}",
+                        'url': f"https://www.youtube.com/results?search_query={topic.replace(' ', '+')}"
+                    },
+                    {
+                        'type': 'article',
+                        'title': f"{topic} - Wikipedia",
+                        'url': f"https://en.wikipedia.org/wiki/{topic.replace(' ', '_')}"
+                    }
+                ]
+            }
+            resources.append(topic_resources)
+        
+        return jsonify({'success': True, 'data': resources})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/ai/recommendations', methods=['POST'])
 def generate_recommendations():
     """Generate study recommendations"""
-    # Implementation will be added in later tasks
-    return jsonify({
-        'success': True,
-        'message': 'Recommendations endpoint - to be implemented'
-    })
+    try:
+        data = request.get_json()
+        performance_data = data.get('performance', [])
+        
+        if not performance_data:
+            return jsonify({'error': 'No performance data provided'}), 400
+        
+        recommendations = []
+        
+        for perf in performance_data:
+            score = perf.get('score', 0)
+            topic = perf.get('topic', 'Unknown')
+            
+            if score < 50:
+                priority = 'high'
+                message = f"Focus on {topic} - needs significant improvement"
+            elif score < 75:
+                priority = 'medium'
+                message = f"Review {topic} - moderate improvement needed"
+            else:
+                priority = 'low'
+                message = f"Maintain {topic} - good performance"
+            
+            recommendations.append({
+                'topic': topic,
+                'priority': priority,
+                'message': message,
+                'resources': [
+                    f"https://www.youtube.com/results?search_query={topic.replace(' ', '+')}",
+                    f"https://en.wikipedia.org/wiki/{topic.replace(' ', '_')}"
+                ]
+            })
+        
+        return jsonify({'success': True, 'data': recommendations})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.errorhandler(Exception)
 def handle_error(error):

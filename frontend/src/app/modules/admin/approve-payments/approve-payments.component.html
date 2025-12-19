@@ -1,0 +1,26 @@
+<div class="approve-payments-container">
+  <h2>Approve Payments</h2>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading && payments.length === 0" class="empty-state card">
+    <p>✅ No pending payments</p>
+  </div>
+
+  <div *ngIf="!loading && payments.length > 0" class="payments-list">
+    <div *ngFor="let payment of payments" class="payment-card card">
+      <div class="payment-header">
+        <h3>{{ payment.first_name }} {{ payment.last_name }}</h3>
+        <span class="amount">₹{{ payment.amount }}</span>
+      </div>
+      <div class="payment-details">
+        <p><strong>Roll:</strong> {{ payment.roll_number }}</p>
+        <p><strong>Date:</strong> {{ payment.payment_date | date }}</p>
+      </div>
+      <div class="actions">
+        <button (click)="approve(payment.id)" class="btn-success">Approve</button>
+        <button (click)="reject(payment.id)" class="btn-danger">Reject</button>
+      </div>
+    </div>
+  </div>
+</div>

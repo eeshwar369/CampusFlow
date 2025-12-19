@@ -55,11 +55,16 @@ export class LoginComponent implements OnInit {
     this.authService.login(this.loginForm.value)
       .subscribe({
         next: (response) => {
-          // Redirect based on user role
+          // Redirect based on user's primary role
           const user = response.user;
-          switch (user.role) {
+          const activeRole = user.activeRole || user.role;
+          
+          switch (activeRole) {
             case 'student':
               this.router.navigate(['/student/dashboard']);
+              break;
+            case 'faculty':
+              this.router.navigate(['/faculty/dashboard']);
               break;
             case 'admin':
               this.router.navigate(['/admin/dashboard']);

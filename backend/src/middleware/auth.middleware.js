@@ -3,7 +3,7 @@ const authService = require('../services/auth.service');
 /**
  * Middleware to verify JWT token
  */
-const verifyToken = (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -26,6 +26,21 @@ const verifyToken = (req, res, next) => {
     
     // Attach user data to request
     req.user = decoded;
+    
+    // Get additional role-specific IDs
+    const db = require('../config/database');
+    
+    if (decoded.role === 'student') {
+      const [students] = await db.query('SELECT id FROM students WHERE user_id = ?', [decoded.id]);
+      if (students.length > 0) {
+        req.user.studentId = students[0].id;
+      }
+    } else if (decoded.role === 'faculty') {
+      const [faculty] = await db.query('SELECT id FROM faculty WHERE user_id = ?', [decoded.id]);
+      if (faculty.length > 0) {
+        req.user.facultyId = faculty[0].id;
+      }
+    }
     
     next();
   } catch (error) {
@@ -95,6 +110,8 @@ const checkRole = (allowedRoles) => {
 };
 
 module.exports = {
+  authenticate: verifyToken,
+  authorize: checkRole,
   verifyToken,
   checkRole
 };

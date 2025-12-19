@@ -1,0 +1,54 @@
+<app-header></app-header>
+<div class="dashboard-container">
+  <h1>Admin Dashboard</h1>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadDashboard()">Retry</button>
+  </div>
+
+  <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Students</h3>
+        <p class="stat-number">{{ dashboard.students }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Total Faculty</h3>
+        <p class="stat-number">{{ dashboard.faculty }}</p>
+      </div>
+
+      <div class="stat-card">
+        <h3>Total Courses</h3>
+        <p class="stat-number">{{ dashboard.courses }}</p>
+      </div>
+
+      <div class="stat-card pending">
+        <h3>Pending Payments</h3>
+        <p class="stat-number">{{ dashboard.pendingPayments }}</p>
+      </div>
+
+      <div class="stat-card pending">
+        <h3>Pending Hall Tickets</h3>
+        <p class="stat-number">{{ dashboard.pendingTickets }}</p>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h2>Quick Actions</h2>
+      <div class="action-buttons">
+        <button routerLink="/admin/students">Manage Students</button>
+        <button routerLink="/admin/courses">Manage Courses</button>
+        <button routerLink="/admin/payments">Approve Payments</button>
+        <button routerLink="/admin/hall-tickets">Approve Hall Tickets</button>
+        <button routerLink="/admin/notifications">Publish Notifications</button>
+        <button routerLink="/admin/reports">Generate Reports</button>
+      </div>
+    </div>
+  </div>
+</div>

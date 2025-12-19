@@ -1,0 +1,61 @@
+<div class="manage-courses-container">
+  <div class="header">
+    <h2>Manage Courses</h2>
+    <button (click)="showAddForm = !showAddForm" class="btn-primary">
+      {{ showAddForm ? 'Cancel' : 'Add New Course' }}
+    </button>
+  </div>
+
+  <!-- Add Course Form -->
+  <div *ngIf="showAddForm" class="add-form card">
+    <h3>Add New Course</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Course Name *</label>
+        <input type="text" [(ngModel)]="newCourse.name" placeholder="e.g., Data Structures">
+      </div>
+      <div class="form-group">
+        <label>Course Code *</label>
+        <input type="text" [(ngModel)]="newCourse.code" placeholder="e.g., CS201">
+      </div>
+      <div class="form-group">
+        <label>Department *</label>
+        <select [(ngModel)]="newCourse.department">
+          <option value="">Select Department</option>
+          <option value="Computer Science">Computer Science</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Mechanical">Mechanical</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Credits *</label>
+        <input type="number" [(ngModel)]="newCourse.credits" min="1" max="6">
+      </div>
+      <div class="form-group">
+        <label>Semester *</label>
+        <input type="number" [(ngModel)]="newCourse.semester" min="1" max="8">
+      </div>
+      <div class="form-group">
+        <label>Year *</label>
+        <input type="number" [(ngModel)]="newCourse.year" min="1" max="4">
+      </div>
+    </div>
+    <button (click)="addCourse()" class="btn-primary">Add Course</button>
+  </div>
+
+  <!-- Courses List -->
+  <div *ngIf="loading" class="loading">Loading courses...</div>
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="courses-grid">
+    <div *ngFor="let course of courses" class="course-card">
+      <h3>{{ course.name }}</h3>
+      <p class="course-code">{{ course.code }}</p>
+      <div class="course-details">
+        <span>📚 {{ course.credits }} Credits</span>
+        <span>🏢 {{ course.department }}</span>
+        <span>📅 Sem {{ course.semester }}</span>
+      </div>
+    </div>
+  </div>
+</div>

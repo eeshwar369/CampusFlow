@@ -13,7 +13,7 @@ exports.up = function(knex) {
     table.integer('reviewed_by').unsigned();
     table.text('rejection_reason');
     table.timestamp('submitted_at').defaultTo(knex.fn.now());
-    table.timestamp('reviewed_at');
+    table.timestamp('reviewed_at').nullable();
     
     table.foreign('submitted_by').references('id').inTable('users');
     table.foreign('reviewed_by').references('id').inTable('users');

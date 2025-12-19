@@ -81,6 +81,16 @@ class AuthService {
       throw new Error('Invalid credentials');
     }
 
+    // Parse roles from JSON if available, otherwise use single role
+    let userRoles = [user.role];
+    if (user.roles) {
+      try {
+        userRoles = JSON.parse(user.roles);
+      } catch (e) {
+        console.error('Error parsing user roles:', e);
+      }
+    }
+
     // Generate token
     const token = this.generateToken(user);
 
@@ -88,7 +98,11 @@ class AuthService {
     const { password_hash, ...userData } = user;
     
     return {
-      user: userData,
+      user: {
+        ...userData,
+        roles: userRoles,
+        activeRole: user.role // Default active role
+      },
       token,
       expiresIn: process.env.JWT_EXPIRES_IN || '24h'
     };

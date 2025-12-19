@@ -12,29 +12,74 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    const token = this.authService.token;
     const currentUser = this.authService.currentUserValue;
     
-    if (currentUser && this.authService.isAuthenticated()) {
-      // Check if route has role requirements
-      const requiredRoles = route.data['roles'] as string[];
-      
-      if (requiredRoles && requiredRoles.length > 0) {
-        // Check if user has required role
-        if (this.authService.hasAnyRole(requiredRoles)) {
-          return true;
-        } else {
-          // User doesn't have required role, redirect to unauthorized page
-          this.router.navigate(['/unauthorized']);
-          return false;
-        }
-      }
-      
-      // No role requirements, user is authenticated
-      return true;
+    // Check if user has valid token
+    if (!token) {
+      console.log('❌ No token found, redirecting to login');
+      this.router.navigate(['/login'], { 
+        queryParams: { returnUrl: state.url },
+        replaceUrl: true 
+      });
+      return false;
     }
 
-    // Not logged in, redirect to login page with return url
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-    return false;
+    // Check if token is expired
+    if (!this.authService.isAuthenticated()) {
+      console.log('❌ Token expired, redirecting to login');
+      localStorage.clear(); // Clear all data on token expiry
+      this.router.navigate(['/login'], { 
+        queryParams: { returnUrl: state.url },
+        replaceUrl: true 
+      });
+      return false;
+    }
+
+    // Check if user data exists
+    if (!currentUser) {
+      console.log('❌ No user data found, redirecting to login');
+      this.router.navigate(['/login'], { 
+        queryParams: { returnUrl: state.url },
+        replaceUrl: true 
+      });
+      return false;
+    }
+
+    // Check if route has role requirements
+    const requiredRoles = route.data['roles'] as string[];
+    
+    if (requiredRoles && requiredRoles.length > 0) {
+      // Check if user has required role
+      if (this.authService.hasAnyRole(requiredRoles)) {
+        console.log('✅ User authorized for route:', state.url);
+        return true;
+      } else {
+        console.log('❌ User does not have required role:', requiredRoles);
+        // Redirect to their dashboard based on role
+        this.redirectToDashboard(currentUser.role);
+        return false;
+      }
+    }
+    
+    // No role requirements, user is authenticated
+    console.log('✅ User authenticated, allowing access');
+    return true;
+  }
+
+  private redirectToDashboard(role: string): void {
+    switch (role) {
+      case 'admin':
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      case 'student':
+        this.router.navigate(['/student/dashboard']);
+        break;
+      case 'faculty':
+        this.router.navigate(['/faculty/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/login']);
+    }
   }
 }

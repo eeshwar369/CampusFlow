@@ -1,0 +1,37 @@
+<app-header></app-header>
+<div class="club-dashboard-container">
+  <h1>Club Dashboard</h1>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <div class="club-info card">
+      <h2>{{ dashboard.club.name }}</h2>
+      <p>{{ dashboard.club.description }}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Members</h3>
+        <p class="stat-number">{{ dashboard.memberCount }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Upcoming Events</h3>
+        <p class="stat-number">{{ dashboard.upcomingEvents }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Achievements</h3>
+        <p class="stat-number">{{ dashboard.achievementCount }}</p>
+      </div>
+    </div>
+
+    <div class="quick-actions card">
+      <h3>Quick Actions</h3>
+      <div class="action-buttons">
+        <button routerLink="/club/events" class="btn-primary">Manage Events</button>
+        <button class="btn-secondary">View Members</button>
+        <button class="btn-secondary">View Achievements</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="approve-tickets-container">
+  <h2>Approve Hall Tickets</h2>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+
+  <div *ngIf="!loading && tickets.length === 0" class="empty-state card">
+    <p>✅ No pending hall tickets</p>
+  </div>
+
+  <div *ngIf="!loading && tickets.length > 0" class="tickets-list">
+    <div *ngFor="let ticket of tickets" class="ticket-card card">
+      <div class="ticket-header">
+        <h3>{{ ticket.first_name }} {{ ticket.last_name }}</h3>
+        <span class="ticket-number">{{ ticket.ticket_number }}</span>
+      </div>
+      <div class="ticket-details">
+        <p><strong>Roll:</strong> {{ ticket.roll_number }}</p>
+        <p><strong>Exam:</strong> {{ ticket.exam_name }}</p>
+        <p><strong>Date:</strong> {{ ticket.exam_date | date }}</p>
+      </div>
+      <button (click)="approve(ticket.id)" class="btn-success">Approve</button>
+    </div>
+  </div>
+</div>

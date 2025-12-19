@@ -32,10 +32,11 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', require('./routes/auth.routes'));
-// app.use('/api/student', require('./routes/student.routes'));
-// app.use('/api/admin', require('./routes/admin.routes'));
-// app.use('/api/seating', require('./routes/seating.routes'));
-// app.use('/api/club', require('./routes/club.routes'));
+app.use('/api/student', require('./routes/student.routes'));
+app.use('/api/faculty', require('./routes/faculty.routes'));
+app.use('/api/admin', require('./routes/admin.routes'));
+app.use('/api/seating', require('./routes/seating.routes'));
+app.use('/api/club', require('./routes/club.routes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

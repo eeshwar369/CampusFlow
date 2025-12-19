@@ -1,0 +1,171 @@
+<app-header></app-header>
+<div class="bulk-upload-container">
+  <h1>📊 Bulk Student Management</h1>
+  <p class="subtitle">Download, modify, and upload student data in bulk</p>
+
+  <div class="instructions card">
+    <h3>📋 How It Works</h3>
+    <ol>
+      <li><strong>Download</strong> the current student list as an Excel file</li>
+      <li><strong>Modify</strong> the file:
+        <ul>
+          <li>Update existing student information</li>
+          <li>Add new students (leave ID empty for new entries)</li>
+          <li>Set <code>is_active = false</code> to deactivate students</li>
+        </ul>
+      </li>
+      <li><strong>Upload</strong> the modified file to apply changes</li>
+    </ol>
+  </div>
+
+  <div class="actions-grid">
+    <!-- Download Section -->
+    <div class="action-card card">
+      <div class="card-icon">⬇️</div>
+      <h3>Download Student List</h3>
+      <p>Export all students to Excel for bulk editing</p>
+      <button 
+        (click)="downloadStudentList()" 
+        [disabled]="downloading"
+        class="btn-download">
+        <span *ngIf="!downloading">📥 Download Excel</span>
+        <span *ngIf="downloading">⏳ Downloading...</span>
+      </button>
+    </div>
+
+    <!-- Upload Section -->
+    <div class="action-card card">
+      <div class="card-icon">⬆️</div>
+      <h3>Upload Modified List</h3>
+      <p>Import updated student data from Excel</p>
+      
+      <div class="file-input-wrapper">
+        <input 
+          type="file" 
+          id="fileInput"
+          (change)="onFileSelected($event)" 
+          accept=".xlsx,.xls,.csv"
+          [disabled]="uploading">
+        <label for="fileInput" class="file-label">
+          <span *ngIf="!selectedFile">📎 Choose File</span>
+          <span *ngIf="selectedFile">✓ {{ selectedFile.name }}</span>
+        </label>
+      </div>
+
+      <button 
+        (click)="uploadStudentList()" 
+        [disabled]="!selectedFile || uploading"
+        class="btn-upload">
+        <span *ngIf="!uploading">📤 Upload & Process</span>
+        <span *ngIf="uploading">⏳ Processing...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  <div *ngIf="uploadResult" class="results-card card">
+    <h3>✅ Upload Results</h3>
+    
+    <div class="stats-grid">
+      <div class="stat-item success">
+        <div class="stat-number">{{ uploadResult.created || 0 }}</div>
+        <div class="stat-label">New Students</div>
+      </div>
+      <div class="stat-item info">
+        <div class="stat-number">{{ uploadResult.updated || 0 }}</div>
+        <div class="stat-label">Updated</div>
+      </div>
+      <div class="stat-item warning">
+        <div class="stat-number">{{ uploadResult.deactivated || 0 }}</div>
+        <div class="stat-label">Deactivated</div>
+      </div>
+      <div class="stat-item error" *ngIf="uploadResult.errors && uploadResult.errors.length > 0">
+        <div class="stat-number">{{ uploadResult.errors.length }}</div>
+        <div class="stat-label">Errors</div>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button 
+        *ngIf="uploadResult.errors && uploadResult.errors.length > 0"
+        (click)="downloadErrorReport()" 
+        class="btn-secondary">
+        📄 Download Error Report
+      </button>
+      <button (click)="clearResults()" class="btn-secondary">
+        🔄 Clear Results
+      </button>
+    </div>
+  </div>
+
+  <!-- Excel Format Guide -->
+  <div class="format-guide card">
+    <h3>📝 Excel Format Guide</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Description</th>
+          <th>Required</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>id</code></td>
+          <td>Student ID (leave empty for new students)</td>
+          <td>No</td>
+          <td>1, 2, 3...</td>
+        </tr>
+        <tr>
+          <td><code>email</code></td>
+          <td>Student email address</td>
+          <td>Yes</td>
+          <td>student@university.edu</td>
+        </tr>
+        <tr>
+          <td><code>first_name</code></td>
+          <td>First name</td>
+          <td>Yes</td>
+          <td>John</td>
+        </tr>
+        <tr>
+          <td><code>last_name</code></td>
+          <td>Last name</td>
+          <td>Yes</td>
+          <td>Doe</td>
+        </tr>
+        <tr>
+          <td><code>roll_number</code></td>
+          <td>Unique roll number</td>
+          <td>Yes</td>
+          <td>CS2024001</td>
+        </tr>
+        <tr>
+          <td><code>department</code></td>
+          <td>Department name</td>
+          <td>Yes</td>
+          <td>Computer Science</td>
+        </tr>
+        <tr>
+          <td><code>year</code></td>
+          <td>Academic year (1-4)</td>
+          <td>Yes</td>
+          <td>2</td>
+        </tr>
+        <tr>
+          <td><code>semester</code></td>
+          <td>Current semester (1-8)</td>
+          <td>Yes</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td><code>is_active</code></td>
+          <td>Active status (true/false)</td>
+          <td>Yes</td>
+          <td>true</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

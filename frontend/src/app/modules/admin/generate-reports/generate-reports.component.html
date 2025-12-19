@@ -1,0 +1,30 @@
+<div class="generate-reports-container">
+  <h2>Generate Reports</h2>
+
+  <div class="report-form card">
+    <div class="form-group">
+      <label>Report Type</label>
+      <select [(ngModel)]="reportType">
+        <option value="student_performance">Student Performance</option>
+        <option value="attendance">Attendance Report</option>
+        <option value="fee_payments">Fee Payments</option>
+        <option value="course_enrollment">Course Enrollment</option>
+      </select>
+    </div>
+
+    <button (click)="generateReport()" [disabled]="generating" class="btn-primary">
+      {{ generating ? 'Generating...' : 'Generate Report' }}
+    </button>
+  </div>
+
+  <div *ngIf="reportData" class="report-results card">
+    <div class="report-header">
+      <h3>Report Results ({{ reportData.length }} records)</h3>
+      <button (click)="downloadReport()" class="btn-secondary">Download JSON</button>
+    </div>
+
+    <div class="report-table">
+      <pre>{{ reportData | json }}</pre>
+    </div>
+  </div>
+</div>

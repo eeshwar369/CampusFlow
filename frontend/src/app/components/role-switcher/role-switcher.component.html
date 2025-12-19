@@ -1,0 +1,27 @@
+<div class="role-switcher" *ngIf="currentUser && hasMultipleRoles()">
+  <div class="role-selector" (click)="toggleDropdown()">
+    <div class="current-role">
+      <span class="role-icon">{{ getRoleIcon(activeRole) }}</span>
+      <span class="role-label">{{ getRoleLabel(activeRole) }}</span>
+      <span class="dropdown-arrow">▼</span>
+    </div>
+  </div>
+
+  <div class="role-dropdown" *ngIf="showDropdown">
+    <div class="dropdown-header">
+      <strong>Switch Role</strong>
+      <span class="close-btn" (click)="toggleDropdown()">✕</span>
+    </div>
+    <div class="role-list">
+      <div 
+        *ngFor="let role of availableRoles" 
+        class="role-item"
+        [class.active]="role === activeRole"
+        (click)="switchRole(role)">
+        <span class="role-icon">{{ getRoleIcon(role) }}</span>
+        <span class="role-label">{{ getRoleLabel(role) }}</span>
+        <span class="check-mark" *ngIf="role === activeRole">✓</span>
+      </div>
+    </div>
+  </div>
+</div>

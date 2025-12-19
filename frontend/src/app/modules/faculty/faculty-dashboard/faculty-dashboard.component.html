@@ -1,0 +1,54 @@
+<app-header></app-header>
+<div class="dashboard-container">
+  <h1>Faculty Dashboard</h1>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadDashboard()">Retry</button>
+  </div>
+
+  <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <div class="faculty-info card">
+      <h2>Welcome, {{ dashboard.faculty.first_name }} {{ dashboard.faculty.last_name }}</h2>
+      <p><strong>Department:</strong> {{ dashboard.faculty.department }}</p>
+      <p><strong>Email:</strong> {{ dashboard.faculty.email }}</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Courses Teaching</h3>
+        <p class="stat-number">{{ dashboard.courses.length }}</p>
+      </div>
+
+      <div class="stat-card pending">
+        <h3>Pending Submissions</h3>
+        <p class="stat-number">{{ dashboard.pendingSubmissions }}</p>
+      </div>
+    </div>
+
+    <div class="courses card">
+      <h3>My Courses</h3>
+      <div class="course-list">
+        <div *ngFor="let course of dashboard.courses" class="course-item">
+          <h4>{{ course.name }}</h4>
+          <p>{{ course.code }} - {{ course.credits }} credits</p>
+          <p><strong>Enrolled Students:</strong> {{ course.enrolled_students }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions card">
+      <h3>Quick Actions</h3>
+      <div class="action-buttons">
+        <button routerLink="/faculty/materials">Upload Materials</button>
+        <button routerLink="/faculty/assignments">Manage Assignments</button>
+        <button routerLink="/faculty/attendance">Mark Attendance</button>
+        <button routerLink="/faculty/performance">Record Performance</button>
+      </div>
+    </div>
+  </div>
+</div>

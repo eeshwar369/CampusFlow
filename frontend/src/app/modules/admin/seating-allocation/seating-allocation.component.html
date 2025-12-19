@@ -1,0 +1,99 @@
+<div class="seating-container">
+  <h2>Seating Allocation</h2>
+  <p class="subtitle">Randomly assign seats and generate seating charts for exams</p>
+
+  <div class="allocation-form card">
+    <h3>Allocate Seats</h3>
+    
+    <div class="form-group">
+      <label for="exam">Select Exam *</label>
+      <select id="exam" [(ngModel)]="selectedExam" [disabled]="allocating">
+        <option [value]="null">Choose an exam</option>
+        <option *ngFor="let exam of exams" [value]="exam.id">
+          {{ exam.exam_name }} - {{ exam.exam_date | date }}
+        </option>
+      </select>
+    </div>
+
+    <div class="info-box">
+      <p><strong>Note:</strong> Detained students will be automatically excluded from seating allocation.</p>
+    </div>
+
+    <button (click)="allocateSeats()" 
+            [disabled]="!selectedExam || allocating"
+            class="btn-allocate">
+      {{ allocating ? 'Allocating...' : 'Allocate Seats' }}
+    </button>
+
+    <div *ngIf="error" class="error-message">{{ error }}</div>
+  </div>
+
+  <!-- Allocation Results -->
+  <div *ngIf="allocationResult" class="results-section card">
+    <h3>Allocation Results</h3>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">{{ allocationResult.totalStudents }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ allocationResult.allocated }}</div>
+        <div class="stat-label">Allocated</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ allocationResult.excluded }}</div>
+        <div class="stat-label">Excluded (Detained)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ allocationResult.roomsUsed }}</div>
+        <div class="stat-label">Rooms Used</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button (click)="generateSeatingChart()" class="btn-primary">
+        Generate Seating Chart
+      </button>
+      <button (click)="downloadChart()" class="btn-secondary" [disabled]="!seatingChart">
+        Download Chart
+      </button>
+      <button (click)="printChart()" class="btn-secondary" [disabled]="!seatingChart">
+        Print Chart
+      </button>
+    </div>
+  </div>
+
+  <!-- Seating Chart Display -->
+  <div *ngIf="seatingChart" class="seating-chart card">
+    <h3>Seating Chart</h3>
+    
+    <div *ngFor="let room of seatingChart.rooms" class="room-section">
+      <h4>{{ room.room_name }} ({{ room.building }}, Floor {{ room.floor }})</h4>
+      <p class="room-capacity">Capacity: {{ room.capacity }} | Allocated: {{ room.students.length }}</p>
+      
+      <div class="seats-grid">
+        <div *ngFor="let student of room.students" class="seat-card">
+          <div class="seat-number">{{ student.seat_number }}</div>
+          <div class="student-info">
+            <div class="roll-number">{{ student.roll_number }}</div>
+            <div class="student-name">{{ student.name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Rooms -->
+  <div class="rooms-section card">
+    <h3>Available Rooms</h3>
+    <div class="rooms-grid">
+      <div *ngFor="let room of rooms" class="room-card">
+        <h4>{{ room.room_name }}</h4>
+        <p>Building: {{ room.building }}</p>
+        <p>Floor: {{ room.floor }}</p>
+        <p>Capacity: {{ room.capacity }}</p>
+      </div>
+    </div>
+  </div>
+</div>

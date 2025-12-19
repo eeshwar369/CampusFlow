@@ -1,0 +1,208 @@
+<app-header></app-header>
+<div class="event-management-container">
+  <div class="header-section">
+    <h1>📅 Event Management</h1>
+    <button (click)="openCreateForm()" class="btn-create">
+      ➕ Create New Event
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading events...</div>
+
+  <!-- Events List -->
+  <div *ngIf="!loading" class="events-grid">
+    <div *ngFor="let event of events" class="event-card card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="status-badge" [ngClass]="getStatusClass(event.status)">
+          {{ event.status }}
+        </span>
+      </div>
+
+      <div class="event-details">
+        <p><strong>📅 Date:</strong> {{ event.event_date | date }}</p>
+        <p><strong>🕐 Time:</strong> {{ event.start_time }} - {{ event.end_time }}</p>
+        <p><strong>📍 Venue:</strong> {{ event.venue }}</p>
+        <p><strong>👥 Participants:</strong> {{ event.participant_count }} / {{ event.max_participants }}</p>
+        <p class="description">{{ event.description }}</p>
+      </div>
+
+      <div class="event-actions">
+        <button (click)="openEditForm(event)" 
+                [disabled]="event.status === 'cancelled'"
+                class="btn-edit">
+          ✏️ Edit
+        </button>
+        <button (click)="openCancelForm(event)" 
+                [disabled]="event.status === 'cancelled'"
+                class="btn-cancel">
+          ❌ Cancel
+        </button>
+        <button (click)="viewParticipants(event)" class="btn-view">
+          👥 Participants
+        </button>
+        <button (click)="viewChangeLog(event)" class="btn-view">
+          📜 History
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Event Modal -->
+  <div *ngIf="showCreateForm" class="modal-overlay" (click)="closeCreateForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Create New Event</h2>
+      
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" [(ngModel)]="newEvent.title" placeholder="Event title">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="newEvent.description" rows="3" placeholder="Event description"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" [(ngModel)]="newEvent.eventDate">
+        </div>
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" [(ngModel)]="newEvent.startTime">
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" [(ngModel)]="newEvent.endTime">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Venue</label>
+          <input type="text" [(ngModel)]="newEvent.venue" placeholder="Event venue">
+        </div>
+        <div class="form-group">
+          <label>Max Participants</label>
+          <input type="number" [(ngModel)]="newEvent.maxParticipants" min="1">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="createEvent()" class="btn-primary">Create Event</button>
+        <button (click)="closeCreateForm()" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div *ngIf="showEditForm" class="modal-overlay" (click)="closeEditForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Edit Event: {{ selectedEvent?.title }}</h2>
+      
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" [(ngModel)]="editEvent.title">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="editEvent.description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" [(ngModel)]="editEvent.eventDate">
+        </div>
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="time" [(ngModel)]="editEvent.startTime">
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="time" [(ngModel)]="editEvent.endTime">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Venue</label>
+        <input type="text" [(ngModel)]="editEvent.venue">
+      </div>
+
+      <div class="alert alert-info">
+        ℹ️ Participants will be notified of significant changes (date, time, venue)
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="updateEvent()" class="btn-primary">Save Changes</button>
+        <button (click)="closeEditForm()" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cancel Event Modal -->
+  <div *ngIf="showCancelForm" class="modal-overlay" (click)="closeCancelForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Cancel Event: {{ selectedEvent?.title }}</h2>
+      
+      <div class="alert alert-warning">
+        ⚠️ All participants will be notified about the cancellation
+      </div>
+
+      <div class="form-group">
+        <label>Cancellation Reason *</label>
+        <textarea [(ngModel)]="cancelReason" rows="4" 
+                  placeholder="Please provide a reason for cancellation"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="cancelEvent()" class="btn-danger">Confirm Cancellation</button>
+        <button (click)="closeCancelForm()" class="btn-secondary">Go Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Participants Modal -->
+  <div *ngIf="showParticipants" class="modal-overlay" (click)="closeParticipants()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Participants: {{ selectedEvent?.title }}</h2>
+      
+      <div class="participants-list">
+        <div *ngFor="let participant of participants" class="participant-item">
+          <div class="participant-info">
+            <strong>{{ participant.first_name }} {{ participant.last_name }}</strong>
+            <span>{{ participant.roll_number }}</span>
+          </div>
+          <span class="participant-status">{{ participant.status }}</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="closeParticipants()" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Log Modal -->
+  <div *ngIf="showChangeLog" class="modal-overlay" (click)="closeChangeLog()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h2>Change History: {{ selectedEvent?.title }}</h2>
+      
+      <div class="change-log-list">
+        <div *ngFor="let log of changeLog" class="log-item">
+          <div class="log-header">
+            <strong>{{ log.change_type }}</strong>
+            <span>{{ log.changed_at | date:'short' }}</span>
+          </div>
+          <p>Changed by: {{ log.first_name }} {{ log.last_name }}</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button (click)="closeChangeLog()" class="btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

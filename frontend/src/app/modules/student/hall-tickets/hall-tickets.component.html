@@ -1,0 +1,71 @@
+<div class="hall-tickets-container">
+  <h2>Hall Tickets</h2>
+  <p class="subtitle">Download your exam hall tickets with QR codes</p>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading hall tickets...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+    <button (click)="loadHallTickets()" class="btn-retry">Retry</button>
+  </div>
+
+  <div *ngIf="!loading && !error" class="tickets-grid">
+    <div *ngIf="hallTickets.length === 0" class="empty-state">
+      <p>No hall tickets available yet.</p>
+      <p class="hint">Hall tickets will appear here once exams are scheduled.</p>
+    </div>
+
+    <div *ngFor="let ticket of hallTickets" class="ticket-card">
+      <div class="ticket-header">
+        <h3>{{ ticket.exam_name }}</h3>
+        <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
+          {{ ticket.status }}
+        </span>
+      </div>
+
+      <div class="ticket-details">
+        <div class="detail-row">
+          <span class="label">Course:</span>
+          <span class="value">{{ ticket.course_name }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Exam Date:</span>
+          <span class="value">{{ ticket.exam_date | date:'fullDate' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Ticket Number:</span>
+          <span class="value">{{ ticket.ticket_number }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="label">Generated:</span>
+          <span class="value">{{ ticket.generated_at | date:'short' }}</span>
+        </div>
+      </div>
+
+      <div class="qr-code" *ngIf="ticket.qr_code">
+        <img [src]="ticket.qr_code" alt="QR Code">
+      </div>
+
+      <div class="ticket-actions">
+        <button *ngIf="ticket.status === 'approved' || ticket.status === 'delivered'" 
+                (click)="downloadTicket(ticket)"
+                class="btn-download">
+          <span class="icon">📥</span>
+          Download PDF
+        </button>
+        <button *ngIf="ticket.status === 'pending'" 
+                class="btn-disabled" 
+                disabled>
+          Awaiting Approval
+        </button>
+        <button *ngIf="ticket.status === 'rejected'" 
+                class="btn-disabled" 
+                disabled>
+          Rejected
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

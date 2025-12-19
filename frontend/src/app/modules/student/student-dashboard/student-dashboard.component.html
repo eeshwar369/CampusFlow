@@ -1,0 +1,71 @@
+<app-header></app-header>
+<div class="dashboard-container">
+  <h1>Student Dashboard</h1>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadDashboard()">Retry</button>
+  </div>
+
+  <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <!-- Student Info -->
+    <div class="card student-info">
+      <h2>Welcome, {{ dashboard.student.first_name }} {{ dashboard.student.last_name }}</h2>
+      <p><strong>Roll Number:</strong> {{ dashboard.student.roll_number }}</p>
+      <p><strong>Department:</strong> {{ dashboard.student.department }}</p>
+      <p><strong>Year:</strong> {{ dashboard.student.year }} | <strong>Semester:</strong> {{ dashboard.student.semester }}</p>
+    </div>
+
+    <!-- Academic Status -->
+    <div class="card academic-status" *ngIf="dashboard.academicStatus">
+      <h3>Academic Status</h3>
+      <p><strong>CGPA:</strong> {{ dashboard.academicStatus.cgpa }}</p>
+      <p><strong>Credits Earned:</strong> {{ dashboard.academicStatus.credits_earned }}</p>
+      <p><strong>Status:</strong> 
+        <span [class.detained]="dashboard.academicStatus.is_detained">
+          {{ dashboard.academicStatus.status }}
+        </span>
+      </p>
+    </div>
+
+    <!-- Enrolled Courses -->
+    <div class="card courses">
+      <h3>Enrolled Courses ({{ dashboard.courses.length }})</h3>
+      <div class="course-list">
+        <div *ngFor="let course of dashboard.courses" class="course-item">
+          <h4>{{ course.name }}</h4>
+          <p>{{ course.code }} - {{ course.credits }} credits</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Exams -->
+    <div class="card exams">
+      <h3>Upcoming Exams ({{ dashboard.exams.length }})</h3>
+      <div class="exam-list">
+        <div *ngFor="let exam of dashboard.exams" class="exam-item">
+          <h4>{{ exam.exam_name }}</h4>
+          <p><strong>Course:</strong> {{ exam.course_name }}</p>
+          <p><strong>Date:</strong> {{ exam.exam_date | date }}</p>
+          <p><strong>Time:</strong> {{ exam.start_time }} - {{ exam.end_time }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card notifications">
+      <h3>Recent Notifications ({{ dashboard.notifications.length }})</h3>
+      <div class="notification-list">
+        <div *ngFor="let notification of dashboard.notifications" class="notification-item">
+          <h4>{{ notification.title }}</h4>
+          <p>{{ notification.message }}</p>
+          <small>{{ notification.created_at | date:'short' }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

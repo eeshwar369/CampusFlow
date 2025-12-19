@@ -1,0 +1,82 @@
+<app-header></app-header>
+<div class="publish-notifications-container">
+  <h2>Publish Notifications</h2>
+
+  <!-- Success Message -->
+  <div *ngIf="success" class="alert alert-success">
+    ✓ {{ success }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    ✗ {{ error }}
+  </div>
+
+  <div class="notification-form card">
+    <div class="form-group">
+      <label>Title *</label>
+      <input 
+        type="text" 
+        [(ngModel)]="notification.title" 
+        placeholder="Notification title"
+        [disabled]="loading">
+    </div>
+
+    <div class="form-group">
+      <label>Message *</label>
+      <textarea 
+        [(ngModel)]="notification.message" 
+        rows="5" 
+        placeholder="Notification message"
+        [disabled]="loading"></textarea>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Type</label>
+        <select [(ngModel)]="notification.type" [disabled]="loading">
+          <option value="announcement">Announcement</option>
+          <option value="circular">Circular</option>
+          <option value="alert">Alert</option>
+          <option value="reminder">Reminder</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Priority</label>
+        <select [(ngModel)]="notification.priority" [disabled]="loading">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="urgent">Urgent</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Target Audience</label>
+        <select [(ngModel)]="notification.targetRole" [disabled]="loading">
+          <option value="all">All Users</option>
+          <option value="student">Students Only</option>
+          <option value="faculty">Faculty Only</option>
+          <option value="admin">Admins Only</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="button-group">
+      <button 
+        (click)="publish()" 
+        class="btn-primary"
+        [disabled]="loading">
+        <span *ngIf="!loading">📢 Publish Notification</span>
+        <span *ngIf="loading">⏳ Publishing...</span>
+      </button>
+      <button 
+        (click)="resetForm()" 
+        class="btn-secondary"
+        [disabled]="loading">
+        Clear Form
+      </button>
+    </div>
+  </div>
+</div>
