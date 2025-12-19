@@ -6,8 +6,35 @@ Roles:
 5.Club Coordinator 
 
 Features of each role
-i.Student :
-->Course/curriculum information
+i. Student :
+-> Course/curriculum information
+-> Hall ticket generation
+-> Circular and Notifications 
+-> Club Information
+-> Feedback for Faculty
+-> Self-performance analysis
 
+ii. Admin:
+-> Approval of Fee/Hall ticket
+-> Providing circulars and Notifications
+-> Deciding the Courses and Curiculum
+-> Providing Time tables
+-> Providing analysis for all roles 
 
+iii. Faculty:
+-> Providing materials and assignments
+-> Conducting tests
+-> Remarks for Students
+-> Analysis of Students performance
+-> Posting Attendance
+-> Achievements(previous works done by the Faculty)
 
+iv. Seating Coordinator:
+-> Analyzing blueprints
+-> Allocation seating for Students
+
+v. Club Coordinator:
+-> Club member details
+-> Events information
+-> Approval of invitations
+-> Achivements of the Club
