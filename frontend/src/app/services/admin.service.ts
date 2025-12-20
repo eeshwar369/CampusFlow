@@ -55,8 +55,16 @@ export class AdminService {
     return this.http.put(`${this.apiUrl}/hall-tickets/${ticketId}/approve`, {});
   }
 
-  bulkUploadHallTickets(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/hall-tickets/bulk-upload`, data);
+  bulkUploadHallTickets(formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/hall-tickets/bulk-upload`, formData);
+  }
+
+  getExamsForHallTickets(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/hall-tickets/exams`);
+  }
+
+  getDepartments(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/hall-tickets/departments`);
   }
 
   getBulkUploadStatus(uploadId: number): Observable<any> {

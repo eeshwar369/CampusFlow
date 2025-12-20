@@ -73,6 +73,49 @@ class StudentController {
     }
   }
 
+  async downloadHallTicket(req, res, next) {
+    try {
+      const studentId = req.user.studentId;
+      const { ticketId } = req.params;
+      const path = require('path');
+      const fs = require('fs');
+      
+      // Verify ticket belongs to student
+      const [tickets] = await require('../config/database').query(`
+        SELECT file_path, ticket_number 
+        FROM hall_tickets 
+        WHERE id = ? AND student_id = ? AND status = 'approved'
+      `, [ticketId, studentId]);
+
+      if (tickets.length === 0) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Hall ticket not found or not approved' 
+        });
+      }
+
+      const filePath = tickets[0].file_path;
+      const ticketNumber = tickets[0].ticket_number;
+
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Hall ticket file not found' 
+        });
+      }
+
+      // Send file
+      res.download(filePath, `HallTicket_${ticketNumber}.pdf`, (err) => {
+        if (err) {
+          next(err);
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getAttendance(req, res, next) {
     try {
       const studentId = req.user.studentId;

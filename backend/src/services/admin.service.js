@@ -198,53 +198,112 @@ class AdminService {
   }
 
   /**
-   * Bulk upload hall tickets
+   * Bulk upload hall tickets with PDF files
    */
   async bulkUploadHallTickets(data) {
-    const { examId, branch, uploadedBy, tickets } = data;
+    const { examId, department, uploadedBy, files } = data;
 
     // Create bulk upload record
     const [uploadResult] = await db.query(`
       INSERT INTO bulk_uploads
-      (upload_type, file_name, total_records, uploaded_by, status)
-      VALUES ('hall_tickets', ?, ?, ?, 'processing')
-    `, [`hall_tickets_${branch}_${Date.now()}.csv`, tickets.length, uploadedBy]);
+      (upload_type, file_name, file_path, total_records, uploaded_by, status)
+      VALUES ('hall_tickets', ?, ?, ?, ?, 'processing')
+    `, [
+      `hall_tickets_${department || 'all'}_${Date.now()}`,
+      'bulk_upload',
+      files.length,
+      uploadedBy
+    ]);
 
     const uploadId = uploadResult.insertId;
 
     const results = {
       success: [],
-      failed: []
+      failed: [],
+      total: files.length
     };
 
-    for (const ticket of tickets) {
+    for (const file of files) {
       try {
+        // Extract roll number from filename (e.g., CS2021001_timestamp.pdf -> CS2021001)
+        const filename = file.filename;
+        const rollNumber = filename.split('_')[0];
+
         // Find student by roll number
         const [students] = await db.query(`
-          SELECT id FROM students WHERE roll_number = ?
-        `, [ticket.rollNumber]);
+          SELECT s.id, s.roll_number, s.department, u.first_name, u.last_name
+          FROM students s
+          JOIN users u ON s.user_id = u.id
+          WHERE s.roll_number = ?
+          ${department ? 'AND s.department = ?' : ''}
+        `, department ? [rollNumber, department] : [rollNumber]);
 
         if (students.length === 0) {
           results.failed.push({
-            rollNumber: ticket.rollNumber,
+            filename: file.originalname,
+            rollNumber,
             error: 'Student not found'
           });
           continue;
         }
 
-        const studentId = students[0].id;
+        const student = students[0];
 
-        // Insert hall ticket
-        await db.query(`
-          INSERT INTO hall_tickets
-          (student_id, exam_id, ticket_number, file_path, status, bulk_upload_id)
-          VALUES (?, ?, ?, ?, 'approved', ?)
-        `, [studentId, examId, ticket.ticketNumber, ticket.filePath, uploadId]);
+        // Check if student is enrolled in the exam
+        const [enrollments] = await db.query(`
+          SELECT COUNT(*) as count
+          FROM course_enrollments ce
+          JOIN exam_schedule es ON ce.course_id = es.course_id
+          WHERE ce.student_id = ? AND es.exam_id = ? AND ce.status = 'enrolled'
+        `, [student.id, examId]);
 
-        results.success.push({ rollNumber: ticket.rollNumber });
+        if (enrollments[0].count === 0) {
+          results.failed.push({
+            filename: file.originalname,
+            rollNumber,
+            error: 'Student not enrolled in exam courses'
+          });
+          continue;
+        }
+
+        // Generate ticket number
+        const ticketNumber = `HT${examId}${student.id}${Date.now()}`;
+
+        // Check if hall ticket already exists
+        const [existing] = await db.query(`
+          SELECT id FROM hall_tickets 
+          WHERE student_id = ? AND exam_id = ?
+        `, [student.id, examId]);
+
+        if (existing.length > 0) {
+          // Update existing hall ticket
+          await db.query(`
+            UPDATE hall_tickets
+            SET file_path = ?, status = 'approved', 
+                approved_by = ?, approved_at = NOW(),
+                bulk_upload_id = ?
+            WHERE id = ?
+          `, [file.path, uploadedBy, uploadId, existing[0].id]);
+        } else {
+          // Insert new hall ticket
+          await db.query(`
+            INSERT INTO hall_tickets
+            (student_id, exam_id, ticket_number, file_path, status, 
+             approved_by, approved_at, bulk_upload_id)
+            VALUES (?, ?, ?, ?, 'approved', ?, NOW(), ?)
+          `, [student.id, examId, ticketNumber, file.path, uploadedBy, uploadId]);
+        }
+
+        results.success.push({
+          filename: file.originalname,
+          rollNumber,
+          studentName: `${student.first_name} ${student.last_name}`,
+          department: student.department
+        });
       } catch (error) {
         results.failed.push({
-          rollNumber: ticket.rollNumber,
+          filename: file.originalname,
+          rollNumber: file.filename.split('_')[0],
           error: error.message
         });
       }
@@ -253,19 +312,51 @@ class AdminService {
     // Update bulk upload record
     await db.query(`
       UPDATE bulk_uploads
-      SET processed_records = ?, failed_records = ?, 
+      SET success_count = ?, failure_count = ?, 
           error_details = ?, status = 'completed'
       WHERE id = ?
-    `, [results.success.length, results.failed.length, 
-        JSON.stringify(results.failed), uploadId]);
+    `, [
+      results.success.length,
+      results.failed.length,
+      JSON.stringify(results.failed),
+      uploadId
+    ]);
 
     return {
       uploadId,
-      total: tickets.length,
-      success: results.success.length,
-      failed: results.failed.length,
-      errors: results.failed
+      ...results
     };
+  }
+
+  /**
+   * Get published exams for hall ticket upload
+   */
+  async getPublishedExams() {
+    const [exams] = await db.query(`
+      SELECT e.id, e.exam_name, e.exam_type, e.start_date, e.end_date,
+             COUNT(DISTINCT es.course_id) as course_count
+      FROM exams e
+      LEFT JOIN exam_schedule es ON e.id = es.exam_id
+      WHERE e.status = 'published'
+      GROUP BY e.id
+      ORDER BY e.start_date DESC
+    `);
+
+    return exams;
+  }
+
+  /**
+   * Get all departments
+   */
+  async getDepartments() {
+    const [departments] = await db.query(`
+      SELECT DISTINCT department 
+      FROM students 
+      WHERE department IS NOT NULL
+      ORDER BY department
+    `);
+
+    return departments.map(d => d.department);
   }
 
   /**

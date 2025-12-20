@@ -103,14 +103,49 @@ class AdminController {
 
   async bulkUploadHallTickets(req, res, next) {
     try {
-      const { examId, branch, tickets } = req.body;
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'No files uploaded' 
+        });
+      }
+
+      const { examId, department } = req.body;
       const uploadedBy = req.user.id;
       
+      if (!examId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Exam ID is required' 
+        });
+      }
+
       const result = await adminService.bulkUploadHallTickets({
-        examId, branch, uploadedBy, tickets
+        examId,
+        department,
+        uploadedBy,
+        files: req.files
       });
       
       res.json({ success: true, data: result });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getExamsForHallTickets(req, res, next) {
+    try {
+      const exams = await adminService.getPublishedExams();
+      res.json({ success: true, data: exams });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getDepartments(req, res, next) {
+    try {
+      const departments = await adminService.getDepartments();
+      res.json({ success: true, data: departments });
     } catch (error) {
       next(error);
     }

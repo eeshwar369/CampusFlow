@@ -1,69 +1,87 @@
-<div class="hall-tickets-container">
-  <h2>Hall Tickets</h2>
-  <p class="subtitle">Download your exam hall tickets with QR codes</p>
-
-  <div *ngIf="loading" class="loading">
-    <p>Loading hall tickets...</p>
+<app-header></app-header>
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Hall Tickets</h1>
+    <p class="page-subtitle">Download your exam hall tickets</p>
   </div>
 
-  <div *ngIf="error" class="error-message">
-    <p>{{ error }}</p>
-    <button (click)="loadHallTickets()" class="btn-retry">Retry</button>
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading hall tickets...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadHallTickets()">
+      <span class="btn-icon">↻</span>
+      <span>Try Again</span>
+    </button>
   </div>
 
   <div *ngIf="!loading && !error" class="tickets-grid">
     <div *ngIf="hallTickets.length === 0" class="empty-state">
-      <p>No hall tickets available yet.</p>
-      <p class="hint">Hall tickets will appear here once exams are scheduled.</p>
+      <div class="empty-icon">🎫</div>
+      <h4 class="empty-title">No hall tickets yet</h4>
+      <p class="empty-text">Your hall tickets will appear here once exams are scheduled</p>
     </div>
 
     <div *ngFor="let ticket of hallTickets" class="ticket-card">
       <div class="ticket-header">
-        <h3>{{ ticket.exam_name }}</h3>
+        <div class="ticket-icon">🎫</div>
+        <div class="ticket-title-section">
+          <h3 class="ticket-title">{{ ticket.exam_name }}</h3>
+          <p class="ticket-type">{{ ticket.exam_type }}</p>
+        </div>
         <span class="status-badge" [ngClass]="getStatusClass(ticket.status)">
           {{ ticket.status }}
         </span>
       </div>
 
       <div class="ticket-details">
-        <div class="detail-row">
-          <span class="label">Course:</span>
-          <span class="value">{{ ticket.course_name }}</span>
+        <div class="detail-item">
+          <span class="detail-label">Courses</span>
+          <span class="detail-value">{{ ticket.course_names }}</span>
         </div>
-        <div class="detail-row">
-          <span class="label">Exam Date:</span>
-          <span class="value">{{ ticket.exam_date | date:'fullDate' }}</span>
+        <div class="detail-item">
+          <span class="detail-label">Exam Period</span>
+          <span class="detail-value">{{ ticket.start_date | date:'mediumDate' }} - {{ ticket.end_date | date:'mediumDate' }}</span>
         </div>
-        <div class="detail-row">
-          <span class="label">Ticket Number:</span>
-          <span class="value">{{ ticket.ticket_number }}</span>
+        <div class="detail-item" *ngIf="ticket.seat_number">
+          <span class="detail-label">Seat Allocation</span>
+          <span class="detail-value">{{ ticket.room_name }} - Seat {{ ticket.seat_number }}</span>
         </div>
-        <div class="detail-row">
-          <span class="label">Generated:</span>
-          <span class="value">{{ ticket.generated_at | date:'short' }}</span>
+        <div class="detail-item" *ngIf="ticket.building">
+          <span class="detail-label">Location</span>
+          <span class="detail-value">{{ ticket.building }}, Floor {{ ticket.floor }}</span>
         </div>
-      </div>
-
-      <div class="qr-code" *ngIf="ticket.qr_code">
-        <img [src]="ticket.qr_code" alt="QR Code">
+        <div class="detail-item">
+          <span class="detail-label">Ticket Number</span>
+          <span class="detail-value ticket-number">{{ ticket.ticket_number }}</span>
+        </div>
       </div>
 
       <div class="ticket-actions">
-        <button *ngIf="ticket.status === 'approved' || ticket.status === 'delivered'" 
-                (click)="downloadTicket(ticket)"
-                class="btn-download">
-          <span class="icon">📥</span>
-          Download PDF
+        <button 
+          *ngIf="ticket.status === 'approved'" 
+          (click)="downloadTicket(ticket)"
+          class="btn btn-primary">
+          <span class="btn-icon">📥</span>
+          <span>Download Hall Ticket</span>
         </button>
-        <button *ngIf="ticket.status === 'pending'" 
-                class="btn-disabled" 
-                disabled>
-          Awaiting Approval
+        <button 
+          *ngIf="ticket.status === 'pending'" 
+          class="btn btn-secondary" 
+          disabled>
+          <span class="btn-icon">⏳</span>
+          <span>Awaiting Approval</span>
         </button>
-        <button *ngIf="ticket.status === 'rejected'" 
-                class="btn-disabled" 
-                disabled>
-          Rejected
+        <button 
+          *ngIf="ticket.status === 'rejected'" 
+          class="btn btn-danger" 
+          disabled>
+          <span class="btn-icon">✕</span>
+          <span>Rejected</span>
         </button>
       </div>
     </div>

@@ -14,6 +14,7 @@ import { ApproveHallTicketsComponent } from './approve-hall-tickets/approve-hall
 import { PublishNotificationsComponent } from './publish-notifications/publish-notifications.component';
 import { GenerateReportsComponent } from './generate-reports/generate-reports.component';
 import { ApproveEventsComponent } from './approve-events/approve-events.component';
+import { BulkHallTicketUploadComponent } from './bulk-hall-ticket-upload/bulk-hall-ticket-upload.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -22,6 +23,7 @@ const routes: Routes = [
   { path: 'courses', component: ManageCoursesComponent },
   { path: 'payments', component: ApprovePaymentsComponent },
   { path: 'hall-tickets', component: ApproveHallTicketsComponent },
+  { path: 'hall-tickets/bulk-upload', component: BulkHallTicketUploadComponent },
   { path: 'notifications', component: PublishNotificationsComponent },
   { path: 'reports', component: GenerateReportsComponent },
   { path: 'seating', component: SeatingAllocationComponent },
@@ -42,7 +44,8 @@ const routes: Routes = [
     ApproveHallTicketsComponent,
     PublishNotificationsComponent,
     GenerateReportsComponent,
-    ApproveEventsComponent
+    ApproveEventsComponent,
+    BulkHallTicketUploadComponent
   ],
   imports: [
     CommonModule,

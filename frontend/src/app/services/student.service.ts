@@ -39,6 +39,10 @@ export class StudentService {
     return this.http.get(`${this.apiUrl}/hall-tickets`);
   }
 
+  downloadHallTicket(ticketId: number): string {
+    return `${environment.apiUrl}/student/hall-tickets/${ticketId}/download`;
+  }
+
   getAttendance(courseId?: number): Observable<any> {
     if (courseId) {
       return this.http.get(`${this.apiUrl}/attendance`, { 

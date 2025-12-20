@@ -31,6 +31,7 @@ router.post('/feedback', studentController.submitFeedback);
 
 // Hall Tickets
 router.get('/hall-tickets', studentController.getHallTickets);
+router.get('/hall-tickets/:ticketId/download', studentController.downloadHallTicket);
 
 // Attendance
 router.get('/attendance', studentController.getAttendance);

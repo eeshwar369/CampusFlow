@@ -157,12 +157,15 @@ class StudentService {
   async getHallTickets(studentId) {
     const [tickets] = await db.query(`
       SELECT ht.*, e.exam_name, e.exam_type, e.start_date, e.end_date,
-             GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') as course_names
+             GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') as course_names,
+             sa.seat_number, r.room_name, r.building, r.floor
       FROM hall_tickets ht
       JOIN exams e ON ht.exam_id = e.id
       LEFT JOIN exam_schedule es ON e.id = es.exam_id
       LEFT JOIN courses c ON es.course_id = c.id
-      WHERE ht.student_id = ?
+      LEFT JOIN seating_allocations sa ON ht.student_id = sa.student_id AND ht.exam_id = sa.exam_id
+      LEFT JOIN rooms r ON sa.room_id = r.id
+      WHERE ht.student_id = ? AND ht.status = 'approved'
       GROUP BY ht.id
       ORDER BY e.start_date DESC
     `, [studentId]);

@@ -1,0 +1,161 @@
+<app-header></app-header>
+<div class="page-container">
+  <div class="page-header">
+    <h1 class="page-title">Bulk Hall Ticket Upload</h1>
+    <p class="page-subtitle">Upload hall tickets for students by roll number</p>
+  </div>
+
+  <!-- Instructions Card -->
+  <div class="instructions-card">
+    <div class="instructions-header">
+      <span class="instructions-icon">💡</span>
+      <h3>Upload Instructions</h3>
+    </div>
+    <ul class="instructions-list">
+      <li>Name each PDF file with the student's roll number (e.g., <code>CS2021001.pdf</code>)</li>
+      <li>Select multiple PDF files at once (up to 100 files)</li>
+      <li>System will automatically match files to students by roll number</li>
+      <li>Only students enrolled in the selected exam will receive hall tickets</li>
+      <li>Existing hall tickets will be updated with new files</li>
+    </ul>
+  </div>
+
+  <!-- Upload Form -->
+  <div class="upload-form-card">
+    <h3 class="form-title">Upload Details</h3>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Select Exam *</label>
+        <select class="form-select" [(ngModel)]="selectedExam" [disabled]="uploading">
+          <option value="">Choose an exam</option>
+          <option *ngFor="let exam of exams" [value]="exam.id">
+            {{ exam.exam_name }} ({{ exam.exam_type }}) - {{ exam.start_date | date:'mediumDate' }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Filter by Department (Optional)</label>
+        <select class="form-select" [(ngModel)]="selectedDepartment" [disabled]="uploading">
+          <option value="">All Departments</option>
+          <option *ngFor="let dept of departments" [value]="dept">
+            {{ dept }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="file-upload-section">
+      <label class="file-upload-label">
+        <input 
+          type="file" 
+          multiple 
+          accept=".pdf" 
+          (change)="onFileSelect($event)"
+          [disabled]="uploading"
+          class="file-input"
+        />
+        <div class="file-upload-button">
+          <span class="upload-icon">📁</span>
+          <span>Choose PDF Files</span>
+        </div>
+      </label>
+      <p class="file-upload-hint">Select multiple PDF files (Max 100 files, 10MB each)</p>
+    </div>
+
+    <!-- Selected Files List -->
+    <div *ngIf="selectedFiles.length > 0" class="selected-files">
+      <h4 class="selected-files-title">Selected Files ({{ selectedFiles.length }})</h4>
+      <div class="files-list">
+        <div *ngFor="let file of selectedFiles; let i = index" class="file-item">
+          <div class="file-info">
+            <span class="file-icon">📄</span>
+            <div class="file-details">
+              <span class="file-name">{{ getFileName(file) }}</span>
+              <span class="file-roll">Roll Number: {{ getRollNumberFromFile(file) }}</span>
+            </div>
+          </div>
+          <button 
+            class="remove-file-btn" 
+            (click)="removeFile(i)"
+            [disabled]="uploading"
+            title="Remove file">
+            ✕
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Button -->
+    <div class="form-actions">
+      <button 
+        class="btn btn-primary btn-upload"
+        (click)="uploadHallTickets()"
+        [disabled]="uploading || selectedFiles.length === 0 || !selectedExam">
+        <span *ngIf="!uploading" class="btn-icon">📤</span>
+        <span *ngIf="uploading" class="loading-spinner"></span>
+        <span>{{ uploading ? 'Uploading...' : 'Upload Hall Tickets' }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Upload Results -->
+  <div *ngIf="uploadResult" class="results-card">
+    <h3 class="results-title">Upload Results</h3>
+    
+    <div class="results-summary">
+      <div class="summary-item summary-success">
+        <span class="summary-icon">✓</span>
+        <div class="summary-content">
+          <span class="summary-label">Successful</span>
+          <span class="summary-value">{{ uploadResult.success.length }}</span>
+        </div>
+      </div>
+
+      <div class="summary-item summary-failed" *ngIf="uploadResult.failed.length > 0">
+        <span class="summary-icon">✕</span>
+        <div class="summary-content">
+          <span class="summary-label">Failed</span>
+          <span class="summary-value">{{ uploadResult.failed.length }}</span>
+        </div>
+      </div>
+
+      <div class="summary-item summary-total">
+        <span class="summary-icon">📊</span>
+        <div class="summary-content">
+          <span class="summary-label">Total</span>
+          <span class="summary-value">{{ uploadResult.total }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success List -->
+    <div *ngIf="uploadResult.success.length > 0" class="result-section">
+      <h4 class="result-section-title">Successfully Uploaded</h4>
+      <div class="result-list">
+        <div *ngFor="let item of uploadResult.success" class="result-item result-success">
+          <span class="result-icon">✓</span>
+          <div class="result-details">
+            <span class="result-name">{{ item.studentName }}</span>
+            <span class="result-meta">{{ item.rollNumber }} • {{ item.department }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Failed List -->
+    <div *ngIf="uploadResult.failed.length > 0" class="result-section">
+      <h4 class="result-section-title">Failed Uploads</h4>
+      <div class="result-list">
+        <div *ngFor="let item of uploadResult.failed" class="result-item result-failed">
+          <span class="result-icon">✕</span>
+          <div class="result-details">
+            <span class="result-name">{{ item.filename }}</span>
+            <span class="result-meta">{{ item.rollNumber }} • {{ item.error }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

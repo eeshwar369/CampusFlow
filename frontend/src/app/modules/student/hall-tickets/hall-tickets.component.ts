@@ -33,8 +33,15 @@ export class HallTicketsComponent implements OnInit {
   }
 
   downloadTicket(ticket: any): void {
-    const url = `${environment.apiUrl}/student/hall-tickets/${ticket.id}/download`;
-    window.open(url, '_blank');
+    const url = this.studentService.downloadHallTicket(ticket.id);
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.download = `HallTicket_${ticket.ticket_number}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   getStatusClass(status: string): string {
