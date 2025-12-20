@@ -33,15 +33,29 @@ export class HallTicketsComponent implements OnInit {
   }
 
   downloadTicket(ticket: any): void {
-    const url = this.studentService.downloadHallTicket(ticket.id);
-    // Create a temporary link and trigger download
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.download = `HallTicket_${ticket.ticket_number}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    if (!ticket.file_path) {
+      alert('Hall ticket file not available');
+      return;
+    }
+
+    // Use the service method to get the download URL with auth token
+    this.studentService.downloadHallTicketFile(ticket.id).subscribe({
+      next: (blob) => {
+        // Create a blob URL and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `HallTicket_${ticket.ticket_number}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Download error:', error);
+        alert(error.error?.message || 'Failed to download hall ticket');
+      }
+    });
   }
 
   getStatusClass(status: string): string {
