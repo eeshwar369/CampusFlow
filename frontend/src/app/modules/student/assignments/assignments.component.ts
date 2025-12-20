@@ -48,16 +48,10 @@ export class AssignmentsComponent implements OnInit {
   }
 
   getStatusText(assignment: any): string {
-    if (assignment.submission_status === 'graded') {
-      return `Graded: ${assignment.marks_obtained} marks`;
-    }
-    if (assignment.submission_status === 'submitted') {
-      return 'Submitted - Awaiting Grade';
-    }
-    if (new Date(assignment.due_date) < new Date()) {
-      return 'Overdue';
-    }
-    return 'Not Submitted';
+    if (assignment.submission_status === 'graded') return 'Graded';
+    if (assignment.submission_status === 'submitted') return 'Submitted';
+    if (this.isOverdue(assignment.due_date)) return 'Overdue';
+    return 'Pending';
   }
 
   isOverdue(dueDate: string): boolean {

@@ -1,103 +1,192 @@
 <app-header></app-header>
 <div class="dashboard-container">
-  <h1>Student Dashboard</h1>
-
-  <div *ngIf="loading" class="loading">
-    <p>Loading dashboard...</p>
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Student Dashboard</h1>
+    <p class="dashboard-subtitle" *ngIf="dashboard">Welcome back, {{ dashboard.student.first_name }}!</p>
   </div>
 
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-    <button (click)="loadDashboard()">Retry</button>
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadDashboard()">
+      <span class="btn-icon">↻</span>
+      <span>Try Again</span>
+    </button>
   </div>
 
   <div *ngIf="dashboard && !loading" class="dashboard-content">
     <!-- Quick Actions -->
-    <div class="quick-actions">
-      <h2>Quick Actions</h2>
-      <div class="action-buttons">
-        <button routerLink="/student/materials" class="action-btn">
-          <span class="btn-icon">📚</span>
-          <span class="btn-text">Course Materials</span>
-        </button>
-        <button routerLink="/student/assignments" class="action-btn">
-          <span class="btn-icon">📝</span>
-          <span class="btn-text">Assignments</span>
-        </button>
-        <button routerLink="/student/mindmap" class="action-btn mindmap-btn">
-          <span class="btn-icon">🗺️</span>
-          <span class="btn-text">Mind Map Helper</span>
-        </button>
-        <button routerLink="/student/hall-tickets" class="action-btn">
-          <span class="btn-icon">🎫</span>
-          <span class="btn-text">Hall Tickets</span>
-        </button>
-        <button routerLink="/student/events" class="action-btn">
-          <span class="btn-icon">📅</span>
-          <span class="btn-text">Events</span>
-        </button>
-        <button routerLink="/student/notifications" class="action-btn notifications-btn">
-          <span class="btn-icon">🔔</span>
-          <span class="btn-text">Notifications</span>
-          <span class="badge" *ngIf="dashboard.notifications && dashboard.notifications.length > 0">
-            {{ dashboard.notifications.length }}
-          </span>
-        </button>
+    <div class="quick-actions-grid">
+      <button routerLink="/student/materials" class="action-btn action-btn-primary">
+        <div class="action-icon">📚</div>
+        <div class="action-text">
+          <h3>Course Materials</h3>
+          <p>Access study resources</p>
+        </div>
+      </button>
+
+      <button routerLink="/student/assignments" class="action-btn action-btn-primary">
+        <div class="action-icon">📝</div>
+        <div class="action-text">
+          <h3>Assignments</h3>
+          <p>View and submit work</p>
+        </div>
+      </button>
+
+      <button routerLink="/student/mindmap" class="action-btn action-btn-success">
+        <div class="action-icon">🗺️</div>
+        <div class="action-text">
+          <h3>Mind Map Helper</h3>
+          <p>AI-powered learning</p>
+        </div>
+      </button>
+
+      <button routerLink="/student/hall-tickets" class="action-btn action-btn-primary">
+        <div class="action-icon">🎫</div>
+        <div class="action-text">
+          <h3>Hall Tickets</h3>
+          <p>Download exam passes</p>
+        </div>
+      </button>
+
+      <button routerLink="/student/events" class="action-btn action-btn-primary">
+        <div class="action-icon">📅</div>
+        <div class="action-text">
+          <h3>Events</h3>
+          <p>Browse campus activities</p>
+        </div>
+      </button>
+
+      <button routerLink="/student/notifications" class="action-btn action-btn-accent">
+        <div class="action-icon">🔔</div>
+        <div class="action-text">
+          <h3>Notifications</h3>
+          <p>Stay updated</p>
+        </div>
+        <span class="notification-badge" *ngIf="dashboard.notifications && dashboard.notifications.length > 0">
+          {{ dashboard.notifications.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Student Info Card -->
+    <div class="info-card">
+      <div class="info-header">
+        <div class="info-icon">👤</div>
+        <div class="info-title">
+          <h2>{{ dashboard.student.first_name }} {{ dashboard.student.last_name }}</h2>
+          <p>{{ dashboard.student.roll_number }}</p>
+        </div>
+      </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Department</span>
+          <span class="info-value">{{ dashboard.student.department }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Year</span>
+          <span class="info-value">{{ dashboard.student.year }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Semester</span>
+          <span class="info-value">{{ dashboard.student.semester }}</span>
+        </div>
       </div>
     </div>
 
-    <!-- Student Info -->
-    <div class="card student-info">
-      <h2>Welcome, {{ dashboard.student.first_name }} {{ dashboard.student.last_name }}</h2>
-      <p><strong>Roll Number:</strong> {{ dashboard.student.roll_number }}</p>
-      <p><strong>Department:</strong> {{ dashboard.student.department }}</p>
-      <p><strong>Year:</strong> {{ dashboard.student.year }} | <strong>Semester:</strong> {{ dashboard.student.semester }}</p>
-    </div>
-
     <!-- Academic Status -->
-    <div class="card academic-status" *ngIf="dashboard.academicStatus">
-      <h3>Academic Status</h3>
-      <p><strong>CGPA:</strong> {{ dashboard.academicStatus.cgpa }}</p>
-      <p><strong>Credits Earned:</strong> {{ dashboard.academicStatus.credits_earned }}</p>
-      <p><strong>Status:</strong> 
-        <span [class.detained]="dashboard.academicStatus.is_detained">
-          {{ dashboard.academicStatus.status }}
-        </span>
-      </p>
+    <div class="info-card academic-card" *ngIf="dashboard.academicStatus">
+      <div class="info-header">
+        <div class="info-icon">📊</div>
+        <h3 class="card-title">Academic Status</h3>
+      </div>
+      <div class="academic-stats">
+        <div class="academic-stat">
+          <span class="stat-label">CGPA</span>
+          <span class="stat-value stat-value-primary">{{ dashboard.academicStatus.cgpa }}</span>
+        </div>
+        <div class="academic-stat">
+          <span class="stat-label">Credits Earned</span>
+          <span class="stat-value">{{ dashboard.academicStatus.credits_earned }}</span>
+        </div>
+        <div class="academic-stat">
+          <span class="stat-label">Status</span>
+          <span class="stat-value" [class.stat-value-danger]="dashboard.academicStatus.is_detained">
+            {{ dashboard.academicStatus.status }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- Enrolled Courses -->
-    <div class="card courses">
-      <h3>Enrolled Courses ({{ dashboard.courses.length }})</h3>
+    <div class="content-card">
+      <div class="card-header">
+        <h3 class="card-title">Enrolled Courses</h3>
+        <span class="card-badge">{{ dashboard.courses.length }}</span>
+      </div>
       <div class="course-list">
-        <div *ngFor="let course of dashboard.courses" class="course-item">
-          <h4>{{ course.name }}</h4>
-          <p>{{ course.code }} - {{ course.credits }} credits</p>
+        <div *ngFor="let course of dashboard.courses" class="list-item">
+          <div class="list-icon">📚</div>
+          <div class="list-content">
+            <h4 class="list-title">{{ course.name }}</h4>
+            <p class="list-subtitle">{{ course.code }} • {{ course.credits }} credits</p>
+          </div>
+        </div>
+        <div *ngIf="dashboard.courses.length === 0" class="empty-state">
+          <div class="empty-icon">📚</div>
+          <p class="empty-text">No courses enrolled yet</p>
         </div>
       </div>
     </div>
 
     <!-- Upcoming Exams -->
-    <div class="card exams">
-      <h3>Upcoming Exams ({{ dashboard.exams.length }})</h3>
+    <div class="content-card">
+      <div class="card-header">
+        <h3 class="card-title">Upcoming Exams</h3>
+        <span class="card-badge">{{ dashboard.exams.length }}</span>
+      </div>
       <div class="exam-list">
-        <div *ngFor="let exam of dashboard.exams" class="exam-item">
-          <h4>{{ exam.exam_name }}</h4>
-          <p><strong>Course:</strong> {{ exam.course_name }}</p>
-          <p><strong>Date:</strong> {{ exam.exam_date | date }}</p>
-          <p><strong>Time:</strong> {{ exam.start_time }} - {{ exam.end_time }}</p>
+        <div *ngFor="let exam of dashboard.exams" class="list-item exam-item">
+          <div class="list-icon">📝</div>
+          <div class="list-content">
+            <h4 class="list-title">{{ exam.exam_name }}</h4>
+            <p class="list-subtitle">{{ exam.course_name }}</p>
+            <div class="exam-details">
+              <span class="exam-detail">📅 {{ exam.exam_date | date:'mediumDate' }}</span>
+              <span class="exam-detail">🕐 {{ exam.start_time }} - {{ exam.end_time }}</span>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="dashboard.exams.length === 0" class="empty-state">
+          <div class="empty-icon">📝</div>
+          <p class="empty-text">No upcoming exams</p>
         </div>
       </div>
     </div>
 
-    <!-- Notifications -->
-    <div class="card notifications">
-      <h3>Recent Notifications ({{ dashboard.notifications.length }})</h3>
+    <!-- Recent Notifications -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3 class="card-title">Recent Notifications</h3>
+        <span class="card-badge">{{ dashboard.notifications.length }}</span>
+      </div>
       <div class="notification-list">
-        <div *ngFor="let notification of dashboard.notifications" class="notification-item">
-          <h4>{{ notification.title }}</h4>
-          <p>{{ notification.message }}</p>
-          <small>{{ notification.created_at | date:'short' }}</small>
+        <div *ngFor="let notification of dashboard.notifications" class="list-item notification-item">
+          <div class="list-icon">🔔</div>
+          <div class="list-content">
+            <h4 class="list-title">{{ notification.title }}</h4>
+            <p class="list-subtitle">{{ notification.message }}</p>
+            <span class="notification-time">{{ notification.created_at | date:'short' }}</span>
+          </div>
+        </div>
+        <div *ngIf="dashboard.notifications.length === 0" class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <p class="empty-text">No new notifications</p>
         </div>
       </div>
     </div>

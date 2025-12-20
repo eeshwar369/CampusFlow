@@ -49,6 +49,10 @@ export class ManageStudentsComponent implements OnInit {
     this.loadStudents();
   }
 
+  hasActiveFilters(): boolean {
+    return !!(this.filters.department || this.filters.year || this.filters.semester);
+  }
+
   updateStatus(studentId: number, status: string): void {
     if (!confirm(`Are you sure you want to change status to ${status}?`)) return;
 

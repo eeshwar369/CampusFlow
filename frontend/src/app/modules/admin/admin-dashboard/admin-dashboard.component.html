@@ -1,60 +1,145 @@
 <app-header></app-header>
 <div class="dashboard-container">
-  <h1>Admin Dashboard</h1>
-
-  <div *ngIf="loading" class="loading">
-    <p>Loading dashboard...</p>
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Admin Dashboard</h1>
+    <p class="dashboard-subtitle">Manage your institution with elegance</p>
   </div>
 
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-    <button (click)="loadDashboard()">Retry</button>
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadDashboard()">
+      <span class="btn-icon">↻</span>
+      <span>Try Again</span>
+    </button>
   </div>
 
   <div *ngIf="dashboard && !loading" class="dashboard-content">
+    <!-- Stats Grid -->
     <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Total Students</h3>
-        <p class="stat-number">{{ dashboard.students }}</p>
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">👥</div>
+        <div class="stat-content">
+          <p class="stat-label">Total Students</p>
+          <h3 class="stat-value">{{ dashboard.students }}</h3>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <h3>Total Faculty</h3>
-        <p class="stat-number">{{ dashboard.faculty }}</p>
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-content">
+          <p class="stat-label">Total Faculty</p>
+          <h3 class="stat-value">{{ dashboard.faculty }}</h3>
+        </div>
       </div>
 
-      <div class="stat-card">
-        <h3>Total Courses</h3>
-        <p class="stat-number">{{ dashboard.courses }}</p>
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <p class="stat-label">Total Courses</p>
+          <h3 class="stat-value">{{ dashboard.courses }}</h3>
+        </div>
       </div>
 
-      <div class="stat-card pending">
-        <h3>Pending Payments</h3>
-        <p class="stat-number">{{ dashboard.pendingPayments }}</p>
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">💳</div>
+        <div class="stat-content">
+          <p class="stat-label">Pending Payments</p>
+          <h3 class="stat-value">{{ dashboard.pendingPayments }}</h3>
+        </div>
       </div>
 
-      <div class="stat-card pending">
-        <h3>Pending Hall Tickets</h3>
-        <p class="stat-number">{{ dashboard.pendingTickets }}</p>
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">🎫</div>
+        <div class="stat-content">
+          <p class="stat-label">Pending Hall Tickets</p>
+          <h3 class="stat-value">{{ dashboard.pendingTickets }}</h3>
+        </div>
       </div>
 
-      <div class="stat-card pending" *ngIf="dashboard.pendingEvents > 0">
-        <h3>Pending Events</h3>
-        <p class="stat-number">{{ dashboard.pendingEvents }}</p>
-        <button class="view-btn" routerLink="/admin/approve-events">Review Events</button>
+      <div class="stat-card stat-card-warning" *ngIf="dashboard.pendingEvents > 0">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <p class="stat-label">Pending Events</p>
+          <h3 class="stat-value">{{ dashboard.pendingEvents }}</h3>
+          <button class="stat-action-btn" routerLink="/admin/approve-events">
+            Review →
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="quick-actions">
-      <h2>Quick Actions</h2>
-      <div class="action-buttons">
-        <button routerLink="/admin/students">Manage Students</button>
-        <button routerLink="/admin/courses">Manage Courses</button>
-        <button routerLink="/admin/payments">Approve Payments</button>
-        <button routerLink="/admin/hall-tickets">Approve Hall Tickets</button>
-        <button routerLink="/admin/approve-events">Approve Events</button>
-        <button routerLink="/admin/notifications">Publish Notifications</button>
-        <button routerLink="/admin/reports">Generate Reports</button>
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-card" routerLink="/admin/students">
+          <div class="action-icon">👥</div>
+          <div class="action-content">
+            <h3 class="action-title">Manage Students</h3>
+            <p class="action-description">View and edit student records</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/courses">
+          <div class="action-icon">📚</div>
+          <div class="action-content">
+            <h3 class="action-title">Manage Courses</h3>
+            <p class="action-description">Create and update courses</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/payments">
+          <div class="action-icon">💳</div>
+          <div class="action-content">
+            <h3 class="action-title">Approve Payments</h3>
+            <p class="action-description">Review payment requests</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/hall-tickets">
+          <div class="action-icon">🎫</div>
+          <div class="action-content">
+            <h3 class="action-title">Approve Hall Tickets</h3>
+            <p class="action-description">Verify and approve tickets</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/approve-events">
+          <div class="action-icon">📅</div>
+          <div class="action-content">
+            <h3 class="action-title">Approve Events</h3>
+            <p class="action-description">Review event proposals</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/notifications">
+          <div class="action-icon">🔔</div>
+          <div class="action-content">
+            <h3 class="action-title">Publish Notifications</h3>
+            <p class="action-description">Send announcements</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/admin/reports">
+          <div class="action-icon">📊</div>
+          <div class="action-content">
+            <h3 class="action-title">Generate Reports</h3>
+            <p class="action-description">View analytics and insights</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
       </div>
     </div>
   </div>

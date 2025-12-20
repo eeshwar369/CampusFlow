@@ -1,42 +1,49 @@
 <app-header></app-header>
 <div class="notifications-container">
-  <div class="page-header">
-    <h1>Notifications</h1>
-    <div class="header-actions">
-      <button class="filter-btn" (click)="toggleFilter()">
-        {{ showUnreadOnly ? '📬 Show All' : '📭 Show Unread Only' }}
-      </button>
+  <div class="page-header-with-actions">
+    <div>
+      <h1 class="page-title">Notifications</h1>
+      <p class="page-subtitle">Stay updated with important announcements</p>
     </div>
+    <button class="btn btn-outline" (click)="toggleFilter()">
+      <span class="btn-icon">{{ showUnreadOnly ? '📬' : '📭' }}</span>
+      <span>{{ showUnreadOnly ? 'Show All' : 'Unread Only' }}</span>
+    </button>
   </div>
 
-  <div class="loading-state" *ngIf="loading">
-    <div class="spinner"></div>
-    <p>Loading notifications...</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading notifications...</p>
   </div>
 
-  <div class="empty-state" *ngIf="!loading && notifications.length === 0">
+  <!-- Empty State -->
+  <div *ngIf="!loading && notifications.length === 0" class="empty-state">
     <div class="empty-icon">🔔</div>
-    <h3>No Notifications</h3>
-    <p>{{ showUnreadOnly ? 'You have no unread notifications' : 'You have no notifications yet' }}</p>
+    <h4 class="empty-title">{{ showUnreadOnly ? 'All caught up!' : 'No notifications yet' }}</h4>
+    <p class="empty-text">{{ showUnreadOnly ? 'You have no unread notifications' : 'Notifications will appear here' }}</p>
   </div>
 
-  <div class="notifications-list" *ngIf="!loading && notifications.length > 0">
+  <!-- Notifications List -->
+  <div *ngIf="!loading && notifications.length > 0" class="notifications-list">
     <div 
       *ngFor="let notification of notifications" 
       class="notification-card"
-      [class.unread]="!notification.is_read"
-      [ngClass]="getNotificationClass(notification.type)"
-      (click)="markAsRead(notification)"
-    >
-      <div class="notification-icon">
+      [class.notification-unread]="!notification.is_read"
+      (click)="markAsRead(notification)">
+      
+      <div class="notification-indicator" *ngIf="!notification.is_read"></div>
+      
+      <div class="notification-icon" [ngClass]="'icon-' + notification.type">
         {{ getNotificationIcon(notification.type) }}
       </div>
+      
       <div class="notification-content">
-        <h3>{{ notification.title }}</h3>
-        <p>{{ notification.message }}</p>
+        <h3 class="notification-title">{{ notification.title }}</h3>
+        <p class="notification-message">{{ notification.message }}</p>
         <div class="notification-meta">
-          <span class="notification-time">{{ notification.created_at | date:'medium' }}</span>
-          <span class="notification-status" *ngIf="!notification.is_read">● Unread</span>
+          <span class="meta-time">{{ notification.created_at | date:'MMM d, y • h:mm a' }}</span>
+          <span class="meta-badge" *ngIf="!notification.is_read">Unread</span>
         </div>
       </div>
     </div>

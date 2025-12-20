@@ -1,63 +1,92 @@
 <app-header></app-header>
-
 <div class="assignments-container">
-  <h2>📝 My Assignments</h2>
+  <div class="page-header">
+    <h1 class="page-title">My Assignments</h1>
+    <p class="page-subtitle">Track and submit your coursework</p>
+  </div>
 
-  <div class="assignments-list" *ngIf="!loading">
-    <div class="assignment-card card" *ngFor="let assignment of assignments">
-      <div class="assignment-header">
-        <div>
-          <h4>{{ assignment.title }}</h4>
-          <p class="course-name">{{ assignment.course_code }} - {{ assignment.course_name }}</p>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading assignments...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && assignments.length === 0" class="empty-state">
+    <div class="empty-icon">📝</div>
+    <h4 class="empty-title">No assignments yet</h4>
+    <p class="empty-text">Your assignments will appear here when they're posted</p>
+  </div>
+
+  <!-- Assignments List -->
+  <div *ngIf="!loading && assignments.length > 0" class="assignments-grid">
+    <div *ngFor="let assignment of assignments" class="assignment-card">
+      <!-- Card Header -->
+      <div class="card-header-section">
+        <div class="header-left">
+          <div class="assignment-icon">📝</div>
+          <div class="header-content">
+            <h3 class="assignment-title">{{ assignment.title }}</h3>
+            <p class="course-info">{{ assignment.course_code }} • {{ assignment.course_name }}</p>
+          </div>
         </div>
-        <span class="badge" [ngClass]="getStatusClass(assignment)">
+        <span class="status-badge" [ngClass]="{
+          'badge-warning': getStatusText(assignment) === 'Pending',
+          'badge-info': getStatusText(assignment) === 'Submitted',
+          'badge-success': getStatusText(assignment) === 'Graded',
+          'badge-danger': getStatusText(assignment) === 'Overdue'
+        }">
           {{ getStatusText(assignment) }}
         </span>
       </div>
 
-      <p class="description">{{ assignment.description }}</p>
+      <!-- Description -->
+      <p class="assignment-description">{{ assignment.description }}</p>
 
-      <div class="assignment-details">
+      <!-- Details Grid -->
+      <div class="details-grid">
         <div class="detail-item">
-          <strong>Due Date:</strong>
-          <span [class.overdue]="isOverdue(assignment.due_date)">
-            {{ assignment.due_date | date:'medium' }}
+          <span class="detail-label">Due Date</span>
+          <span class="detail-value" [class.text-danger]="isOverdue(assignment.due_date)">
+            {{ assignment.due_date | date:'MMM d, y • h:mm a' }}
           </span>
         </div>
         <div class="detail-item">
-          <strong>Max Marks:</strong>
-          <span>{{ assignment.max_marks }}</span>
+          <span class="detail-label">Max Marks</span>
+          <span class="detail-value">{{ assignment.max_marks }}</span>
         </div>
       </div>
 
-      <div class="instructions" *ngIf="assignment.instructions">
-        <strong>Instructions:</strong>
-        <p>{{ assignment.instructions }}</p>
+      <!-- Instructions -->
+      <div *ngIf="assignment.instructions" class="instructions-box">
+        <div class="instructions-header">
+          <span class="instructions-icon">💡</span>
+          <span class="instructions-label">Instructions</span>
+        </div>
+        <p class="instructions-text">{{ assignment.instructions }}</p>
       </div>
 
-      <div class="assignment-actions">
+      <!-- Actions / Submission Info -->
+      <div class="card-footer-section">
         <button 
-          class="btn btn-primary" 
           *ngIf="canSubmit(assignment)"
+          class="btn btn-primary"
           (click)="submitAssignment(assignment.id)">
-          Submit Assignment
+          <span class="btn-icon">📤</span>
+          <span>Submit Assignment</span>
         </button>
         
-        <div class="submission-info" *ngIf="assignment.submission_status">
-          <p>Submitted on: {{ assignment.submitted_at | date:'medium' }}</p>
-          <p *ngIf="assignment.submission_status === 'graded'" class="grade-info">
-            Grade: {{ assignment.marks_obtained }} / {{ assignment.max_marks }}
-          </p>
+        <div *ngIf="assignment.submission_status" class="submission-info">
+          <div class="info-item">
+            <span class="info-icon">✓</span>
+            <span class="info-text">Submitted on {{ assignment.submitted_at | date:'MMM d, y' }}</span>
+          </div>
+          <div *ngIf="assignment.submission_status === 'graded'" class="grade-display">
+            <span class="grade-label">Grade:</span>
+            <span class="grade-value">{{ assignment.marks_obtained }} / {{ assignment.max_marks }}</span>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <div *ngIf="loading" class="loading">
-    <p>Loading assignments...</p>
-  </div>
-
-  <div *ngIf="!loading && assignments.length === 0" class="no-data">
-    <p>No assignments available</p>
   </div>
 </div>

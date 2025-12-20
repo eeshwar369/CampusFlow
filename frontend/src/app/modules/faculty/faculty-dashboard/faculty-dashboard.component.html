@@ -1,63 +1,134 @@
 <app-header></app-header>
 <div class="dashboard-container">
-  <h1>Faculty Dashboard</h1>
-
-  <div *ngIf="loading" class="loading">
-    <p>Loading dashboard...</p>
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">Faculty Dashboard</h1>
+    <p class="dashboard-subtitle" *ngIf="dashboard">Welcome, Prof. {{ dashboard.faculty.last_name }}</p>
   </div>
 
-  <div *ngIf="error" class="error">
-    <p>{{ error }}</p>
-    <button (click)="loadDashboard()">Retry</button>
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-btn" (click)="loadDashboard()">
+      <span class="btn-icon">↻</span>
+      <span>Try Again</span>
+    </button>
   </div>
 
   <div *ngIf="dashboard && !loading" class="dashboard-content">
-    <div class="faculty-info card">
-      <h2>Welcome, {{ dashboard.faculty.first_name }} {{ dashboard.faculty.last_name }}</h2>
-      <p><strong>Department:</strong> {{ dashboard.faculty.department }}</p>
-      <p><strong>Email:</strong> {{ dashboard.faculty.email }}</p>
-    </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Courses Teaching</h3>
-        <p class="stat-number">{{ dashboard.courses.length }}</p>
+    <!-- Faculty Info Card -->
+    <div class="info-card">
+      <div class="info-header">
+        <div class="info-icon">👨‍🏫</div>
+        <div class="info-title">
+          <h2>{{ dashboard.faculty.first_name }} {{ dashboard.faculty.last_name }}</h2>
+          <p>{{ dashboard.faculty.email }}</p>
+        </div>
       </div>
-
-      <div class="stat-card pending">
-        <h3>Pending Submissions</h3>
-        <p class="stat-number">{{ dashboard.pendingSubmissions }}</p>
-      </div>
-    </div>
-
-    <div class="courses card">
-      <h3>My Courses</h3>
-      <div class="course-list">
-        <div *ngFor="let course of dashboard.courses" class="course-item">
-          <div class="course-info">
-            <h4>{{ course.name }}</h4>
-            <p>{{ course.code }} - {{ course.credits }} credits</p>
-            <p><strong>Enrolled Students:</strong> {{ course.enrolled_students }}</p>
-          </div>
-          <div class="course-actions">
-            <button class="btn btn-primary" [routerLink]="['/faculty/courses', course.id, 'materials']">
-              📚 Materials
-            </button>
-            <button class="btn btn-secondary" [routerLink]="['/faculty/courses', course.id, 'assignments']">
-              📝 Assignments
-            </button>
-          </div>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Department</span>
+          <span class="info-value">{{ dashboard.faculty.department }}</span>
         </div>
       </div>
     </div>
 
-    <div class="quick-actions card">
-      <h3>Quick Actions</h3>
-      <div class="action-buttons">
-        <button routerLink="/faculty/materials">Upload Materials</button>
-        <button routerLink="/faculty/assignments">Manage Assignments</button>
-        <button routerLink="/faculty/attendance">Mark Attendance</button>
-        <button routerLink="/faculty/performance">Record Performance</button>
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card-primary">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <p class="stat-label">Courses Teaching</p>
+          <h3 class="stat-value">{{ dashboard.courses.length }}</h3>
+        </div>
+      </div>
+
+      <div class="stat-card stat-card-warning">
+        <div class="stat-icon">📝</div>
+        <div class="stat-content">
+          <p class="stat-label">Pending Submissions</p>
+          <h3 class="stat-value">{{ dashboard.pendingSubmissions }}</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- My Courses -->
+    <div class="content-card">
+      <div class="card-header">
+        <h3 class="card-title">My Courses</h3>
+        <span class="card-badge">{{ dashboard.courses.length }}</span>
+      </div>
+      <div class="course-list">
+        <div *ngFor="let course of dashboard.courses" class="course-item">
+          <div class="course-info">
+            <div class="course-icon">📚</div>
+            <div class="course-details">
+              <h4 class="course-title">{{ course.name }}</h4>
+              <p class="course-subtitle">{{ course.code }} • {{ course.credits }} credits</p>
+              <p class="course-meta">{{ course.enrolled_students }} students enrolled</p>
+            </div>
+          </div>
+          <div class="course-actions">
+            <button class="action-btn-sm action-btn-primary" [routerLink]="['/faculty/courses', course.id, 'materials']">
+              <span class="btn-icon">📚</span>
+              <span>Materials</span>
+            </button>
+            <button class="action-btn-sm action-btn-secondary" [routerLink]="['/faculty/courses', course.id, 'assignments']">
+              <span class="btn-icon">📝</span>
+              <span>Assignments</span>
+            </button>
+          </div>
+        </div>
+        <div *ngIf="dashboard.courses.length === 0" class="empty-state">
+          <div class="empty-icon">📚</div>
+          <p class="empty-text">No courses assigned yet</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-section">
+      <h2 class="section-title">Quick Actions</h2>
+      <div class="action-grid">
+        <button class="action-card" routerLink="/faculty/materials">
+          <div class="action-icon">📤</div>
+          <div class="action-content">
+            <h3 class="action-title">Upload Materials</h3>
+            <p class="action-description">Share course resources</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/faculty/assignments">
+          <div class="action-icon">📝</div>
+          <div class="action-content">
+            <h3 class="action-title">Manage Assignments</h3>
+            <p class="action-description">Create and grade work</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/faculty/attendance">
+          <div class="action-icon">✓</div>
+          <div class="action-content">
+            <h3 class="action-title">Mark Attendance</h3>
+            <p class="action-description">Track student presence</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
+
+        <button class="action-card" routerLink="/faculty/performance">
+          <div class="action-icon">📊</div>
+          <div class="action-content">
+            <h3 class="action-title">Record Performance</h3>
+            <p class="action-description">Update student grades</p>
+          </div>
+          <div class="action-arrow">→</div>
+        </button>
       </div>
     </div>
   </div>
