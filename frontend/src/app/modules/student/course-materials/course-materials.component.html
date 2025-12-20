@@ -1,0 +1,42 @@
+<app-header></app-header>
+
+<div class="materials-container">
+  <h2>📚 Course Materials</h2>
+
+  <!-- Filter -->
+  <div class="filter-section card">
+    <label>Filter by Course:</label>
+    <select [(ngModel)]="selectedCourse" (change)="filterByCourse()">
+      <option [ngValue]="null">All Courses</option>
+      <option *ngFor="let course of courses" [ngValue]="course.id">
+        {{ course.code }} - {{ course.name }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Materials Grid -->
+  <div class="materials-grid" *ngIf="!loading">
+    <div class="material-card card" *ngFor="let material of materials">
+      <div class="material-icon">
+        <span>{{ getFileIcon(material.file_type) }}</span>
+      </div>
+      <h4>{{ material.title }}</h4>
+      <p class="course-name">{{ material.course_code }} - {{ material.course_name }}</p>
+      <p class="description">{{ material.description }}</p>
+      <div class="material-footer">
+        <span class="date">{{ material.created_at | date }}</span>
+        <button class="btn btn-primary" (click)="downloadMaterial(material)">
+          ⬇️ Download
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading materials...</p>
+  </div>
+
+  <div *ngIf="!loading && materials.length === 0" class="no-data">
+    <p>No materials available</p>
+  </div>
+</div>

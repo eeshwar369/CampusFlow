@@ -185,13 +185,13 @@ class AdminService {
   async getPendingHallTickets() {
     const [tickets] = await db.query(`
       SELECT ht.*, s.roll_number, u.first_name, u.last_name,
-             e.exam_name, e.exam_date
+             e.exam_name, e.exam_type, e.start_date, e.end_date
       FROM hall_tickets ht
       JOIN students s ON ht.student_id = s.id
       JOIN users u ON s.user_id = u.id
       JOIN exams e ON ht.exam_id = e.id
       WHERE ht.status = 'pending'
-      ORDER BY e.exam_date ASC
+      ORDER BY e.start_date ASC
     `);
 
     return tickets;
@@ -506,10 +506,15 @@ class AdminService {
    */
   async getExams() {
     const [exams] = await db.query(`
-      SELECT e.*, c.name as course_name, c.code as course_code
+      SELECT e.*, 
+             GROUP_CONCAT(DISTINCT CONCAT(c.code, ' - ', c.name) SEPARATOR ', ') as courses,
+             MIN(es.exam_date) as start_exam_date,
+             MAX(es.exam_date) as end_exam_date
       FROM exams e
-      JOIN courses c ON e.course_id = c.id
-      ORDER BY e.exam_date DESC
+      LEFT JOIN exam_schedule es ON e.id = es.exam_id
+      LEFT JOIN courses c ON es.course_id = c.id
+      GROUP BY e.id
+      ORDER BY e.start_date DESC
     `);
     return exams;
   }

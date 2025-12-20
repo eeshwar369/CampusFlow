@@ -137,6 +137,50 @@ class FacultyController {
       next(error);
     }
   }
+
+  async getCourseMaterials(req, res, next) {
+    try {
+      const facultyId = req.user.facultyId;
+      const { courseId } = req.params;
+      const materials = await facultyService.getCourseMaterials(facultyId, courseId);
+      res.json({ success: true, data: materials });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAssignments(req, res, next) {
+    try {
+      const facultyId = req.user.facultyId;
+      const { courseId } = req.params;
+      const assignments = await facultyService.getAssignments(facultyId, courseId);
+      res.json({ success: true, data: assignments });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteAssignment(req, res, next) {
+    try {
+      const facultyId = req.user.facultyId;
+      const { assignmentId } = req.params;
+      await facultyService.deleteAssignment(facultyId, assignmentId);
+      res.json({ success: true, message: 'Assignment deleted successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteMaterial(req, res, next) {
+    try {
+      const facultyId = req.user.facultyId;
+      const { materialId } = req.params;
+      await facultyService.deleteMaterial(facultyId, materialId);
+      res.json({ success: true, message: 'Material deleted successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new FacultyController();

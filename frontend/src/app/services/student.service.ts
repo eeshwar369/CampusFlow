@@ -52,10 +52,6 @@ export class StudentService {
     return this.http.get(`${this.apiUrl}/assignments`);
   }
 
-  submitAssignment(formData: FormData): Observable<any> {
-    return this.http.post(`${this.apiUrl}/assignments/submit`, formData);
-  }
-
   getMindMaps(): Observable<any> {
     return this.http.get(`${this.apiUrl}/mind-maps`);
   }
@@ -96,5 +92,25 @@ export class StudentService {
 
   getExamTimetable(examId: number): Observable<any> {
     return this.http.get(`${this.apiUrl}/exams/${examId}/timetable`);
+  }
+
+  // Course Materials
+  getAllMaterials(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/materials`);
+  }
+
+  downloadMaterial(materialId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/materials/${materialId}/download`, {
+      responseType: 'blob'
+    });
+  }
+
+  // Assignments  
+  getAssignmentDetail(assignmentId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/assignments/${assignmentId}`);
+  }
+
+  submitAssignment(assignmentId: number, formData: FormData): Observable<any> {
+    return this.http.post(`${this.apiUrl}/assignments/${assignmentId}/submit`, formData);
   }
 }

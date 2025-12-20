@@ -1,0 +1,62 @@
+<app-header></app-header>
+
+<div class="materials-container">
+  <h2>📚 Course Materials</h2>
+
+  <!-- Upload Form -->
+  <div class="upload-section card">
+    <h3>Upload New Material</h3>
+    <form (ngSubmit)="uploadMaterial()">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" [(ngModel)]="uploadForm.title" name="title" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="uploadForm.description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>File Type</label>
+        <select [(ngModel)]="uploadForm.fileType" name="fileType">
+          <option value="pdf">PDF</option>
+          <option value="doc">Document</option>
+          <option value="ppt">Presentation</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>File *</label>
+        <input type="file" (change)="onFileSelect($event)" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="uploading">
+        {{ uploading ? 'Uploading...' : 'Upload Material' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Materials List -->
+  <div class="materials-list">
+    <div class="material-card card" *ngFor="let material of materials">
+      <div class="material-header">
+        <h4>{{ material.title }}</h4>
+        <span class="badge">{{ material.file_type }}</span>
+      </div>
+      <p>{{ material.description }}</p>
+      <div class="material-footer">
+        <span>Downloads: {{ material.download_count }}</span>
+        <span>{{ material.created_at | date }}</span>
+        <button class="btn btn-danger btn-sm" (click)="deleteMaterial(material.id)">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="materials.length === 0" class="no-data">
+    No materials uploaded yet
+  </div>
+</div>

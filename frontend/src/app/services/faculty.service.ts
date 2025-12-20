@@ -68,4 +68,22 @@ export class FacultyService {
   getTimetable(): Observable<any> {
     return this.http.get(`${this.apiUrl}/timetable`);
   }
+
+  // Course Materials
+  getCourseMaterials(courseId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/courses/${courseId}/materials`);
+  }
+
+  deleteMaterial(materialId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/materials/${materialId}`);
+  }
+
+  // Assignments
+  getAssignments(courseId: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/courses/${courseId}/assignments`);
+  }
+
+  deleteAssignment(assignmentId: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/assignments/${assignmentId}`);
+  }
 }

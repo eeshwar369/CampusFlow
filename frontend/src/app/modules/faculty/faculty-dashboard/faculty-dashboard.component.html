@@ -34,9 +34,19 @@
       <h3>My Courses</h3>
       <div class="course-list">
         <div *ngFor="let course of dashboard.courses" class="course-item">
-          <h4>{{ course.name }}</h4>
-          <p>{{ course.code }} - {{ course.credits }} credits</p>
-          <p><strong>Enrolled Students:</strong> {{ course.enrolled_students }}</p>
+          <div class="course-info">
+            <h4>{{ course.name }}</h4>
+            <p>{{ course.code }} - {{ course.credits }} credits</p>
+            <p><strong>Enrolled Students:</strong> {{ course.enrolled_students }}</p>
+          </div>
+          <div class="course-actions">
+            <button class="btn btn-primary" [routerLink]="['/faculty/courses', course.id, 'materials']">
+              📚 Materials
+            </button>
+            <button class="btn btn-secondary" [routerLink]="['/faculty/courses', course.id, 'assignments']">
+              📝 Assignments
+            </button>
+          </div>
         </div>
       </div>
     </div>

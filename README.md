@@ -117,13 +117,32 @@ CampusFlow is an enterprise-grade exam management system that streamlines the en
 ### 3. Student
 **Dashboard Features:**
 - Course enrollment
+- Course materials access
+- Assignment submissions
 - Notifications
 - Hall tickets
 - Events participation
 - AI-powered study tools
 
+**Course Materials:**
+- View all course materials
+- Filter by course
+- Download PDFs and documents
+- Track uploaded materials
+- Access study resources
+
+**Assignments:**
+- View all assignments
+- Check due dates
+- Submit assignments
+- Track submission status
+- View grades and feedback
+- Late submission warnings
+
 **Key Capabilities:**
 - View enrolled courses
+- Download course materials
+- Submit assignments
 - Receive exam notifications
 - Download hall tickets
 - View seating allocation
@@ -135,12 +154,39 @@ CampusFlow is an enterprise-grade exam management system that streamlines the en
 ### 4. Faculty
 **Dashboard Features:**
 - Course management
+- Course materials upload
+- Assignment management
 - Student performance tracking
 - Attendance management
 - Grade submission
 
+**Course Materials:**
+- Upload PDFs, documents, presentations
+- Organize by course
+- Track download counts
+- Delete materials
+- Support for multiple file types
+
+**Assignment Management:**
+- Create assignments with deadlines
+- Set maximum marks
+- Provide detailed instructions
+- View all submissions
+- Track grading progress
+- Delete assignments
+
+**Grading System:**
+- View student submissions
+- Download submitted files
+- Assign marks
+- Provide feedback
+- Update grades
+- Track completion status
+
 **Key Capabilities:**
 - Manage assigned courses
+- Upload study materials
+- Create and grade assignments
 - Mark attendance
 - Submit grades
 - View student performance
@@ -502,6 +548,62 @@ CREATE TABLE user_notifications (
 - club_members
 - student_academic_status
 - attendance
+- course_materials
+- assignments
+- assignment_submissions
+
+#### course_materials
+```sql
+CREATE TABLE course_materials (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  course_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  file_type VARCHAR(50),
+  file_path VARCHAR(500) NOT NULL,
+  file_size INT,
+  uploaded_by INT,
+  download_count INT DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (uploaded_by) REFERENCES faculty(id)
+);
+```
+
+#### assignments
+```sql
+CREATE TABLE assignments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  course_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  due_date DATETIME NOT NULL,
+  max_marks INT NOT NULL,
+  instructions TEXT,
+  created_by INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+  FOREIGN KEY (created_by) REFERENCES faculty(id)
+);
+```
+
+#### assignment_submissions
+```sql
+CREATE TABLE assignment_submissions (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  assignment_id INT NOT NULL,
+  student_id INT NOT NULL,
+  file_path VARCHAR(500) NOT NULL,
+  comments TEXT,
+  marks_obtained INT,
+  feedback TEXT,
+  status ENUM('submitted', 'graded') DEFAULT 'submitted',
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  graded_at TIMESTAMP,
+  FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES students(id)
+);
+```
 - student_performance
 - audit_logs
 - seating_configurations
@@ -693,23 +795,37 @@ GET    /api/seating/courses                  - Get courses
 
 ### Student
 ```
-GET    /api/student/dashboard        - Dashboard data
-GET    /api/student/courses          - Enrolled courses
-GET    /api/student/notifications    - User notifications
-PUT    /api/student/notifications/:id/read - Mark as read
-GET    /api/student/hall-tickets     - Student hall tickets
-GET    /api/student/events           - Available events
-POST   /api/student/events/:id/register - Register for event
-POST   /api/student/mindmap          - Generate mind map
+GET    /api/student/dashboard                      - Dashboard data
+GET    /api/student/courses                        - Enrolled courses
+GET    /api/student/materials                      - All course materials
+GET    /api/student/courses/:id/materials          - Course materials
+GET    /api/student/materials/:id/download         - Download material
+GET    /api/student/assignments                    - All assignments
+GET    /api/student/assignments/:id                - Assignment details
+POST   /api/student/assignments/:id/submit         - Submit assignment
+GET    /api/student/notifications                  - User notifications
+PUT    /api/student/notifications/:id/read         - Mark as read
+GET    /api/student/hall-tickets                   - Student hall tickets
+GET    /api/student/events                         - Available events
+POST   /api/student/events/:id/register            - Register for event
+POST   /api/student/mindmap                        - Generate mind map
 ```
 
 ### Faculty
 ```
-GET    /api/faculty/dashboard        - Dashboard data
-GET    /api/faculty/courses          - Assigned courses
-POST   /api/faculty/attendance       - Mark attendance
-POST   /api/faculty/grades           - Submit grades
-GET    /api/faculty/students/:courseId - Course students
+GET    /api/faculty/dashboard                      - Dashboard data
+GET    /api/faculty/courses                        - Assigned courses
+GET    /api/faculty/courses/:id/materials          - Get course materials
+POST   /api/faculty/materials                      - Upload material
+DELETE /api/faculty/materials/:id                  - Delete material
+GET    /api/faculty/courses/:id/assignments        - Get assignments
+POST   /api/faculty/assignments                    - Create assignment
+DELETE /api/faculty/assignments/:id                - Delete assignment
+GET    /api/faculty/assignments/:id/submissions    - Get submissions
+PUT    /api/faculty/submissions/:id/grade          - Grade submission
+POST   /api/faculty/attendance                     - Mark attendance
+POST   /api/faculty/grades                         - Submit grades
+GET    /api/faculty/students/:courseId             - Course students
 ```
 
 ### Club
@@ -752,14 +868,20 @@ src/app/
 │   │   ├── seat-allocation/
 │   │   ├── seating-chart/
 │   │   └── hall-ticket-generation/
+│   ├── faculty/
+│   │   ├── faculty-dashboard/
+│   │   ├── course-materials/
+│   │   ├── assignments/
+│   │   └── assignment-grading/
 │   ├── student/
 │   │   ├── student-dashboard/
+│   │   ├── course-materials/
+│   │   ├── assignments/
+│   │   ├── assignment-submit/
 │   │   ├── notifications/
 │   │   ├── hall-tickets/
 │   │   ├── events/
 │   │   └── mindmap/
-│   ├── faculty/
-│   │   └── faculty-dashboard/
 │   └── club/
 │       ├── club-dashboard/
 │       ├── event-management/

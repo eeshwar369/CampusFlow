@@ -38,4 +38,12 @@ router.get('/feedback', facultyController.getFeedback);
 // Timetable
 router.get('/timetable', facultyController.getTimetable);
 
+// Course Materials
+router.get('/courses/:courseId/materials', facultyController.getCourseMaterials);
+router.delete('/materials/:materialId', facultyController.deleteMaterial);
+
+// Assignments
+router.get('/courses/:courseId/assignments', facultyController.getAssignments);
+router.delete('/assignments/:assignmentId', facultyController.deleteAssignment);
+
 module.exports = router;

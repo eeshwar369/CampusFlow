@@ -16,24 +16,37 @@ class FacultyService {
       throw new Error('Faculty not found');
     }
 
-    // Get assigned courses
+    // Get assigned courses with enrolled student count
     const [courses] = await db.query(`
-      SELECT * FROM courses WHERE faculty_id = ?
+      SELECT c.*, 
+             COUNT(DISTINCT ce.student_id) as enrolled_students
+      FROM courses c
+      LEFT JOIN course_enrollments ce ON c.id = ce.course_id
+      WHERE c.faculty_id = ?
+      GROUP BY c.id
     `, [facultyId]);
 
-    // Get pending assignments
-    const [pendingSubmissions] = await db.query(`
-      SELECT COUNT(*) as count
-      FROM assignment_submissions asub
-      JOIN assignments a ON asub.assignment_id = a.id
-      JOIN courses c ON a.course_id = c.id
-      WHERE c.faculty_id = ? AND asub.status = 'submitted'
-    `, [facultyId]);
+    // Get pending assignment submissions (only if table exists)
+    let pendingSubmissions = 0;
+    try {
+      const [result] = await db.query(`
+        SELECT COUNT(*) as count
+        FROM assignment_submissions asub
+        JOIN assignments a ON asub.assignment_id = a.id
+        JOIN courses c ON a.course_id = c.id
+        WHERE c.faculty_id = ? AND asub.status = 'submitted'
+      `, [facultyId]);
+      pendingSubmissions = result[0].count;
+    } catch (error) {
+      // Table might not exist yet, default to 0
+      console.log('Note: assignment_submissions table not accessible:', error.message);
+      pendingSubmissions = 0;
+    }
 
     return {
       faculty: faculty[0],
       courses,
-      pendingSubmissions: pendingSubmissions[0].count
+      pendingSubmissions
     };
   }
 
@@ -307,6 +320,101 @@ class FacultyService {
     `, [facultyId]);
 
     return timetable;
+  }
+
+  /**
+   * Get course materials
+   */
+  async getCourseMaterials(facultyId, courseId) {
+    // Verify faculty teaches this course
+    const [courses] = await db.query(`
+      SELECT * FROM courses WHERE id = ? AND faculty_id = ?
+    `, [courseId, facultyId]);
+
+    if (courses.length === 0) {
+      throw new Error('Not authorized for this course');
+    }
+
+    const [materials] = await db.query(`
+      SELECT cm.*, f.first_name, f.last_name
+      FROM course_materials cm
+      LEFT JOIN faculty f ON cm.uploaded_by = f.id
+      WHERE cm.course_id = ?
+      ORDER BY cm.created_at DESC
+    `, [courseId]);
+
+    return materials;
+  }
+
+  /**
+   * Get assignments for a course
+   */
+  async getAssignments(facultyId, courseId) {
+    // Verify faculty teaches this course
+    const [courses] = await db.query(`
+      SELECT * FROM courses WHERE id = ? AND faculty_id = ?
+    `, [courseId, facultyId]);
+
+    if (courses.length === 0) {
+      throw new Error('Not authorized for this course');
+    }
+
+    const [assignments] = await db.query(`
+      SELECT a.*, 
+             COUNT(asub.id) as total_submissions,
+             SUM(CASE WHEN asub.status = 'graded' THEN 1 ELSE 0 END) as graded_count
+      FROM assignments a
+      LEFT JOIN assignment_submissions asub ON a.id = asub.assignment_id
+      WHERE a.course_id = ?
+      GROUP BY a.id
+      ORDER BY a.due_date DESC
+    `, [courseId]);
+
+    return assignments;
+  }
+
+  /**
+   * Delete assignment
+   */
+  async deleteAssignment(facultyId, assignmentId) {
+    // Verify faculty owns this assignment
+    const [assignments] = await db.query(`
+      SELECT a.* FROM assignments a
+      JOIN courses c ON a.course_id = c.id
+      WHERE a.id = ? AND c.faculty_id = ?
+    `, [assignmentId, facultyId]);
+
+    if (assignments.length === 0) {
+      throw new Error('Not authorized to delete this assignment');
+    }
+
+    const [result] = await db.query(`
+      DELETE FROM assignments WHERE id = ?
+    `, [assignmentId]);
+
+    return result.affectedRows > 0;
+  }
+
+  /**
+   * Delete course material
+   */
+  async deleteMaterial(facultyId, materialId) {
+    // Verify faculty uploaded this material
+    const [materials] = await db.query(`
+      SELECT cm.* FROM course_materials cm
+      JOIN courses c ON cm.course_id = c.id
+      WHERE cm.id = ? AND c.faculty_id = ?
+    `, [materialId, facultyId]);
+
+    if (materials.length === 0) {
+      throw new Error('Not authorized to delete this material');
+    }
+
+    const [result] = await db.query(`
+      DELETE FROM course_materials WHERE id = ?
+    `, [materialId]);
+
+    return result.affectedRows > 0;
   }
 }
 

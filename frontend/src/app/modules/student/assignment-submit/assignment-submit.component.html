@@ -1,0 +1,69 @@
+<app-header></app-header>
+
+<div class="submit-container">
+  <div class="submit-card card" *ngIf="!loading && assignment">
+    <h2>📤 Submit Assignment</h2>
+
+    <div class="assignment-info">
+      <h3>{{ assignment.title }}</h3>
+      <p class="course-name">{{ assignment.course_code }} - {{ assignment.course_name }}</p>
+      <p class="description">{{ assignment.description }}</p>
+
+      <div class="assignment-meta">
+        <div class="meta-item">
+          <strong>Due Date:</strong>
+          <span [class.overdue]="isOverdue()">
+            {{ assignment.due_date | date:'medium' }}
+          </span>
+        </div>
+        <div class="meta-item">
+          <strong>Max Marks:</strong>
+          <span>{{ assignment.max_marks }}</span>
+        </div>
+      </div>
+
+      <div class="instructions" *ngIf="assignment.instructions">
+        <strong>Instructions:</strong>
+        <p>{{ assignment.instructions }}</p>
+      </div>
+    </div>
+
+    <div class="alert alert-danger" *ngIf="isOverdue()">
+      ⚠️ This assignment is overdue. Late submissions may not be accepted.
+    </div>
+
+    <form (ngSubmit)="submitAssignment()" class="submission-form">
+      <div class="form-group">
+        <label>Upload File *</label>
+        <input 
+          type="file" 
+          (change)="onFileSelect($event)" 
+          required
+          accept=".pdf,.doc,.docx,.zip">
+        <small>Accepted formats: PDF, DOC, DOCX, ZIP</small>
+      </div>
+
+      <div class="form-group">
+        <label>Comments (Optional)</label>
+        <textarea 
+          [(ngModel)]="submissionForm.comments" 
+          name="comments" 
+          rows="4"
+          placeholder="Add any comments or notes about your submission..."></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="cancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="submitting">
+          {{ submitting ? 'Submitting...' : 'Submit Assignment' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading assignment details...</p>
+  </div>
+</div>

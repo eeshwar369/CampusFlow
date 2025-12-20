@@ -1,0 +1,63 @@
+<app-header></app-header>
+
+<div class="assignments-container">
+  <h2>📝 My Assignments</h2>
+
+  <div class="assignments-list" *ngIf="!loading">
+    <div class="assignment-card card" *ngFor="let assignment of assignments">
+      <div class="assignment-header">
+        <div>
+          <h4>{{ assignment.title }}</h4>
+          <p class="course-name">{{ assignment.course_code }} - {{ assignment.course_name }}</p>
+        </div>
+        <span class="badge" [ngClass]="getStatusClass(assignment)">
+          {{ getStatusText(assignment) }}
+        </span>
+      </div>
+
+      <p class="description">{{ assignment.description }}</p>
+
+      <div class="assignment-details">
+        <div class="detail-item">
+          <strong>Due Date:</strong>
+          <span [class.overdue]="isOverdue(assignment.due_date)">
+            {{ assignment.due_date | date:'medium' }}
+          </span>
+        </div>
+        <div class="detail-item">
+          <strong>Max Marks:</strong>
+          <span>{{ assignment.max_marks }}</span>
+        </div>
+      </div>
+
+      <div class="instructions" *ngIf="assignment.instructions">
+        <strong>Instructions:</strong>
+        <p>{{ assignment.instructions }}</p>
+      </div>
+
+      <div class="assignment-actions">
+        <button 
+          class="btn btn-primary" 
+          *ngIf="canSubmit(assignment)"
+          (click)="submitAssignment(assignment.id)">
+          Submit Assignment
+        </button>
+        
+        <div class="submission-info" *ngIf="assignment.submission_status">
+          <p>Submitted on: {{ assignment.submitted_at | date:'medium' }}</p>
+          <p *ngIf="assignment.submission_status === 'graded'" class="grade-info">
+            Grade: {{ assignment.marks_obtained }} / {{ assignment.max_marks }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading assignments...</p>
+  </div>
+
+  <div *ngIf="!loading && assignments.length === 0" class="no-data">
+    <p>No assignments available</p>
+  </div>
+</div>

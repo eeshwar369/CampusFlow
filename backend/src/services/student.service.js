@@ -156,12 +156,15 @@ class StudentService {
    */
   async getHallTickets(studentId) {
     const [tickets] = await db.query(`
-      SELECT ht.*, e.exam_name, e.exam_date, c.name as course_name
+      SELECT ht.*, e.exam_name, e.exam_type, e.start_date, e.end_date,
+             GROUP_CONCAT(DISTINCT c.name SEPARATOR ', ') as course_names
       FROM hall_tickets ht
       JOIN exams e ON ht.exam_id = e.id
-      JOIN courses c ON e.course_id = c.id
+      LEFT JOIN exam_schedule es ON e.id = es.exam_id
+      LEFT JOIN courses c ON es.course_id = c.id
       WHERE ht.student_id = ?
-      ORDER BY e.exam_date DESC
+      GROUP BY ht.id
+      ORDER BY e.start_date DESC
     `, [studentId]);
 
     return tickets;

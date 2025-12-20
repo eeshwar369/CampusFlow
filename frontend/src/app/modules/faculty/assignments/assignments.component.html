@@ -1,0 +1,73 @@
+<app-header></app-header>
+
+<div class="assignments-container">
+  <div class="header-section">
+    <h2>📝 Assignments</h2>
+    <button class="btn btn-primary" (click)="showCreateForm = !showCreateForm">
+      {{ showCreateForm ? 'Cancel' : '+ Create Assignment' }}
+    </button>
+  </div>
+
+  <!-- Create Form -->
+  <div class="create-section card" *ngIf="showCreateForm">
+    <h3>Create New Assignment</h3>
+    <form (ngSubmit)="createAssignment()">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" [(ngModel)]="assignmentForm.title" name="title" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea [(ngModel)]="assignmentForm.description" name="description" rows="3" required></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Due Date *</label>
+          <input type="datetime-local" [(ngModel)]="assignmentForm.dueDate" name="dueDate" required>
+        </div>
+
+        <div class="form-group">
+          <label>Max Marks *</label>
+          <input type="number" [(ngModel)]="assignmentForm.maxMarks" name="maxMarks" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Instructions</label>
+        <textarea [(ngModel)]="assignmentForm.instructions" name="instructions" rows="4"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Create Assignment</button>
+    </form>
+  </div>
+
+  <!-- Assignments List -->
+  <div class="assignments-list">
+    <div class="assignment-card card" *ngFor="let assignment of assignments">
+      <div class="assignment-header">
+        <h4>{{ assignment.title }}</h4>
+        <span class="badge">{{ assignment.max_marks }} marks</span>
+      </div>
+      <p>{{ assignment.description }}</p>
+      <div class="assignment-meta">
+        <span>Due: {{ assignment.due_date | date:'medium' }}</span>
+        <span>Submissions: {{ assignment.total_submissions || 0 }}</span>
+        <span>Graded: {{ assignment.graded_count || 0 }}</span>
+      </div>
+      <div class="assignment-actions">
+        <button class="btn btn-primary btn-sm" (click)="viewSubmissions(assignment.id)">
+          View Submissions
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="deleteAssignment(assignment.id)">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="assignments.length === 0 && !showCreateForm" class="no-data">
+    No assignments created yet. Click "Create Assignment" to get started.
+  </div>
+</div>

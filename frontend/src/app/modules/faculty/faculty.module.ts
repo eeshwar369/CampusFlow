@@ -4,15 +4,24 @@ import { RouterModule, Routes } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../../shared/shared.module';
 import { FacultyDashboardComponent } from './faculty-dashboard/faculty-dashboard.component';
+import { CourseMaterialsComponent } from './course-materials/course-materials.component';
+import { AssignmentsComponent } from './assignments/assignments.component';
+import { AssignmentGradingComponent } from './assignment-grading/assignment-grading.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-  { path: 'dashboard', component: FacultyDashboardComponent }
+  { path: 'dashboard', component: FacultyDashboardComponent },
+  { path: 'courses/:id/materials', component: CourseMaterialsComponent },
+  { path: 'courses/:id/assignments', component: AssignmentsComponent },
+  { path: 'assignments/:id/grading', component: AssignmentGradingComponent }
 ];
 
 @NgModule({
   declarations: [
-    FacultyDashboardComponent
+    FacultyDashboardComponent,
+    CourseMaterialsComponent,
+    AssignmentsComponent,
+    AssignmentGradingComponent
   ],
   imports: [
     CommonModule,

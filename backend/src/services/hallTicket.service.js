@@ -27,10 +27,13 @@ class HallTicketService {
       const student = students[0];
 
       const [exams] = await db.query(`
-        SELECT e.*, c.name as course_name, c.code as course_code
+        SELECT e.*, 
+               GROUP_CONCAT(DISTINCT CONCAT(c.code, ' - ', c.name) SEPARATOR ', ') as courses
         FROM exams e
-        JOIN courses c ON e.course_id = c.id
+        LEFT JOIN exam_schedule es ON e.id = es.exam_id
+        LEFT JOIN courses c ON es.course_id = c.id
         WHERE e.id = ?
+        GROUP BY e.id
       `, [examId]);
 
       if (exams.length === 0) {
@@ -210,13 +213,13 @@ class HallTicketService {
   async bulkGenerateForExam(examId, options = {}) {
     const { autoApprove = false, generatedBy } = options;
 
-    // Get all students enrolled in the exam's course
+    // Get all students enrolled in the exam's courses
     const [students] = await db.query(`
       SELECT DISTINCT s.id, s.roll_number
       FROM students s
       JOIN course_enrollments ce ON s.id = ce.student_id
-      JOIN exams e ON ce.course_id = e.course_id
-      WHERE e.id = ? AND ce.status = 'enrolled'
+      JOIN exam_schedule es ON ce.course_id = es.course_id
+      WHERE es.exam_id = ? AND ce.status = 'enrolled'
       AND s.id NOT IN (
         SELECT student_id FROM student_academic_status
         WHERE status = 'detained'
@@ -267,15 +270,19 @@ class HallTicketService {
   async getHallTicketsForExam(examId) {
     const [tickets] = await db.query(`
       SELECT ht.*, s.roll_number, u.first_name, u.last_name,
-             e.exam_name, e.exam_date, e.start_time, e.end_time,
-             sa.seat_number, r.room_name
+             e.exam_name, e.exam_type, e.start_date, e.end_date,
+             sa.seat_number, r.room_name,
+             GROUP_CONCAT(DISTINCT CONCAT(c.code, ' - ', c.name) SEPARATOR ', ') as courses
       FROM hall_tickets ht
       JOIN students s ON ht.student_id = s.id
       JOIN users u ON s.user_id = u.id
       JOIN exams e ON ht.exam_id = e.id
+      LEFT JOIN exam_schedule es ON e.id = es.exam_id
+      LEFT JOIN courses c ON es.course_id = c.id
       LEFT JOIN seating_allocations sa ON ht.student_id = sa.student_id AND ht.exam_id = sa.exam_id
       LEFT JOIN rooms r ON sa.room_id = r.id
       WHERE ht.exam_id = ?
+      GROUP BY ht.id
       ORDER BY s.roll_number
     `, [examId]);
 

@@ -1,0 +1,86 @@
+<app-header></app-header>
+
+<div class="grading-container">
+  <h2>📊 Assignment Submissions</h2>
+
+  <div class="grading-layout">
+    <!-- Submissions List -->
+    <div class="submissions-panel">
+      <h3>Submissions ({{ submissions.length }})</h3>
+      <div class="submission-list">
+        <div 
+          class="submission-item" 
+          *ngFor="let submission of submissions"
+          [class.selected]="selectedSubmission?.id === submission.id"
+          (click)="selectSubmission(submission)">
+          <div class="student-info">
+            <strong>{{ submission.first_name }} {{ submission.last_name }}</strong>
+            <span class="roll-number">{{ submission.roll_number }}</span>
+          </div>
+          <div class="submission-meta">
+            <span class="status" [ngClass]="getStatusClass(submission.status)">
+              {{ submission.status }}
+            </span>
+            <span class="date">{{ submission.submitted_at | date:'short' }}</span>
+          </div>
+          <div class="marks" *ngIf="submission.status === 'graded'">
+            {{ submission.marks_obtained }} marks
+          </div>
+        </div>
+      </div>
+      <div *ngIf="submissions.length === 0" class="no-data">
+        No submissions yet
+      </div>
+    </div>
+
+    <!-- Grading Panel -->
+    <div class="grading-panel card" *ngIf="selectedSubmission">
+      <h3>Grade Submission</h3>
+      
+      <div class="student-details">
+        <h4>{{ selectedSubmission.first_name }} {{ selectedSubmission.last_name }}</h4>
+        <p>Roll Number: {{ selectedSubmission.roll_number }}</p>
+        <p>Submitted: {{ selectedSubmission.submitted_at | date:'medium' }}</p>
+      </div>
+
+      <div class="submission-content">
+        <h4>Submission File</h4>
+        <p>{{ selectedSubmission.file_path }}</p>
+        <p class="comments" *ngIf="selectedSubmission.comments">
+          <strong>Comments:</strong> {{ selectedSubmission.comments }}
+        </p>
+      </div>
+
+      <form (ngSubmit)="gradeSubmission()">
+        <div class="form-group">
+          <label>Marks Obtained *</label>
+          <input 
+            type="number" 
+            [(ngModel)]="gradingForm.marksObtained" 
+            name="marksObtained" 
+            required
+            min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Feedback</label>
+          <textarea 
+            [(ngModel)]="gradingForm.feedback" 
+            name="feedback" 
+            rows="4"
+            placeholder="Provide feedback to the student..."></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          {{ selectedSubmission.status === 'graded' ? 'Update Grade' : 'Submit Grade' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="grading-panel card" *ngIf="!selectedSubmission && submissions.length > 0">
+      <div class="no-selection">
+        <p>Select a submission from the list to grade</p>
+      </div>
+    </div>
+  </div>
+</div>

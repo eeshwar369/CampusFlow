@@ -13,6 +13,7 @@ exports.seed = async function(knex) {
   await knex('course_enrollments').del();
   await knex('notifications').del();
   await knex('student_academic_status').del();
+  await knex('exam_schedule').del();
   await knex('exams').del();
   await knex('rooms').del();
   await knex('courses').del();
@@ -80,33 +81,34 @@ exports.seed = async function(knex) {
     { id: 4, user_id: 17, employee_id: 'FAC004', department: 'Mechanical', designation: 'Professor', specialization: 'Thermodynamics' }
   ]);
 
-  // 4. Insert Courses (15 courses)
+  // 4. Insert Courses (15 courses) - Now with faculty assignments
   console.log('📚 Seeding courses...');
   await knex('courses').insert([
-    // Computer Science
-    { id: 1, name: 'Data Structures', code: 'CS201', department: 'Computer Science', semester: 4, credits: 4, year: 2 },
-    { id: 2, name: 'Algorithms', code: 'CS202', department: 'Computer Science', semester: 4, credits: 4, year: 2 },
-    { id: 3, name: 'Database Systems', code: 'CS301', department: 'Computer Science', semester: 5, credits: 3, year: 3 },
-    { id: 4, name: 'Operating Systems', code: 'CS302', department: 'Computer Science', semester: 5, credits: 4, year: 3 },
-    { id: 5, name: 'Computer Networks', code: 'CS303', department: 'Computer Science', semester: 6, credits: 3, year: 3 },
+    // Computer Science - Faculty 1 (Dr. Sarah Williams)
+    { id: 1, name: 'Data Structures', code: 'CS201', department: 'Computer Science', semester: 4, credits: 4, year: 2, faculty_id: 1 },
+    { id: 2, name: 'Algorithms', code: 'CS202', department: 'Computer Science', semester: 4, credits: 4, year: 2, faculty_id: 1 },
+    // Computer Science - Faculty 2 (Prof. Michael Brown)
+    { id: 3, name: 'Database Systems', code: 'CS301', department: 'Computer Science', semester: 5, credits: 3, year: 3, faculty_id: 2 },
+    { id: 4, name: 'Operating Systems', code: 'CS302', department: 'Computer Science', semester: 5, credits: 4, year: 3, faculty_id: 2 },
+    { id: 5, name: 'Computer Networks', code: 'CS303', department: 'Computer Science', semester: 6, credits: 3, year: 3, faculty_id: 1 },
     
-    // Electronics
-    { id: 6, name: 'Digital Electronics', code: 'ECE201', department: 'Electronics', semester: 3, credits: 4, year: 2 },
-    { id: 7, name: 'Microprocessors', code: 'ECE202', department: 'Electronics', semester: 4, credits: 4, year: 2 },
-    { id: 8, name: 'VLSI Design', code: 'ECE301', department: 'Electronics', semester: 6, credits: 3, year: 3 },
+    // Electronics - Faculty 3 (Dr. Emily Jones)
+    { id: 6, name: 'Digital Electronics', code: 'ECE201', department: 'Electronics', semester: 3, credits: 4, year: 2, faculty_id: 3 },
+    { id: 7, name: 'Microprocessors', code: 'ECE202', department: 'Electronics', semester: 4, credits: 4, year: 2, faculty_id: 3 },
+    { id: 8, name: 'VLSI Design', code: 'ECE301', department: 'Electronics', semester: 6, credits: 3, year: 3, faculty_id: 3 },
     
-    // Mechanical
-    { id: 9, name: 'Engineering Mechanics', code: 'MECH101', department: 'Mechanical', semester: 1, credits: 4, year: 1 },
-    { id: 10, name: 'Thermodynamics', code: 'MECH201', department: 'Mechanical', semester: 3, credits: 4, year: 2 },
+    // Mechanical - Faculty 4 (Prof. David Garcia)
+    { id: 9, name: 'Engineering Mechanics', code: 'MECH101', department: 'Mechanical', semester: 1, credits: 4, year: 1, faculty_id: 4 },
+    { id: 10, name: 'Thermodynamics', code: 'MECH201', department: 'Mechanical', semester: 3, credits: 4, year: 2, faculty_id: 4 },
     
-    // Civil
-    { id: 11, name: 'Structural Analysis', code: 'CIVIL301', department: 'Civil', semester: 5, credits: 4, year: 3 },
-    { id: 12, name: 'Construction Management', code: 'CIVIL401', department: 'Civil', semester: 7, credits: 3, year: 4 },
+    // Civil - Assign to Faculty 1 (can teach multiple departments)
+    { id: 11, name: 'Structural Analysis', code: 'CIVIL301', department: 'Civil', semester: 5, credits: 4, year: 3, faculty_id: 1 },
+    { id: 12, name: 'Construction Management', code: 'CIVIL401', department: 'Civil', semester: 7, credits: 3, year: 4, faculty_id: 1 },
     
-    // Electrical
-    { id: 13, name: 'Circuit Theory', code: 'EEE201', department: 'Electrical', semester: 3, credits: 4, year: 2 },
-    { id: 14, name: 'Power Systems', code: 'EEE301', department: 'Electrical', semester: 5, credits: 4, year: 3 },
-    { id: 15, name: 'Control Systems', code: 'EEE302', department: 'Electrical', semester: 6, credits: 3, year: 3 }
+    // Electrical - Assign to Faculty 2
+    { id: 13, name: 'Circuit Theory', code: 'EEE201', department: 'Electrical', semester: 3, credits: 4, year: 2, faculty_id: 2 },
+    { id: 14, name: 'Power Systems', code: 'EEE301', department: 'Electrical', semester: 5, credits: 4, year: 3, faculty_id: 2 },
+    { id: 15, name: 'Control Systems', code: 'EEE302', department: 'Electrical', semester: 6, credits: 3, year: 3, faculty_id: 2 }
   ]);
 
   // 5. Insert Rooms (10 rooms)
@@ -124,20 +126,36 @@ exports.seed = async function(knex) {
     { id: 10, room_name: 'Conference Room', building: 'Admin Block', floor: 2, capacity: 25, is_available: true }
   ]);
 
-  // 6. Insert Exams (8 exams)
+  // 6. Insert Exams (4 exams with new structure)
   console.log('📝 Seeding exams...');
   await knex('exams').insert([
-    { id: 1, course_id: 1, exam_name: 'Data Structures - Mid-Sem', exam_date: '2024-03-15', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
-    { id: 2, course_id: 2, exam_name: 'Algorithms - Mid-Sem', exam_date: '2024-03-16', start_time: '14:00:00', end_time: '16:00:00', duration_minutes: 120, total_marks: 50 },
-    { id: 3, course_id: 3, exam_name: 'Database Systems - Mid-Sem', exam_date: '2024-03-17', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
-    { id: 4, course_id: 6, exam_name: 'Digital Electronics - Mid-Sem', exam_date: '2024-03-18', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
-    { id: 5, course_id: 1, exam_name: 'Data Structures - End-Sem', exam_date: '2024-05-20', start_time: '10:00:00', end_time: '13:00:00', duration_minutes: 180, total_marks: 100 },
-    { id: 6, course_id: 2, exam_name: 'Algorithms - End-Sem', exam_date: '2024-05-21', start_time: '10:00:00', end_time: '13:00:00', duration_minutes: 180, total_marks: 100 },
-    { id: 7, course_id: 9, exam_name: 'Engineering Mechanics - Mid-Sem', exam_date: '2024-03-19', start_time: '14:00:00', end_time: '16:00:00', duration_minutes: 120, total_marks: 50 },
-    { id: 8, course_id: 13, exam_name: 'Circuit Theory - Mid-Sem', exam_date: '2024-03-20', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 }
+    { id: 1, exam_name: 'Mid-Semester Examination - March 2024', exam_type: 'mid-term', start_date: '2024-03-15', end_date: '2024-03-20', status: 'published', created_by: 18 },
+    { id: 2, exam_name: 'End-Semester Examination - May 2024', exam_type: 'end-term', start_date: '2024-05-20', end_date: '2024-05-25', status: 'draft', created_by: 18 },
+    { id: 3, exam_name: 'Supplementary Examination - June 2024', exam_type: 'supplementary', start_date: '2024-06-10', end_date: '2024-06-15', status: 'draft', created_by: 18 },
+    { id: 4, exam_name: 'Regular Examination - April 2024', exam_type: 'regular', start_date: '2024-04-01', end_date: '2024-04-05', status: 'published', created_by: 18 }
   ]);
 
-  // 7. Insert Student Academic Status
+  // 7. Insert Exam Schedule (link exams to courses with dates/times)
+  console.log('📅 Seeding exam schedule...');
+  await knex('exam_schedule').insert([
+    // Mid-Semester Exam - Multiple courses
+    { exam_id: 1, course_id: 1, exam_date: '2024-03-15', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 1, course_id: 2, exam_date: '2024-03-16', start_time: '14:00:00', end_time: '16:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 1, course_id: 3, exam_date: '2024-03-17', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 1, course_id: 6, exam_date: '2024-03-18', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 1, course_id: 9, exam_date: '2024-03-19', start_time: '14:00:00', end_time: '16:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 1, course_id: 13, exam_date: '2024-03-20', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
+    
+    // End-Semester Exam
+    { exam_id: 2, course_id: 1, exam_date: '2024-05-20', start_time: '10:00:00', end_time: '13:00:00', duration_minutes: 180, total_marks: 100 },
+    { exam_id: 2, course_id: 2, exam_date: '2024-05-21', start_time: '10:00:00', end_time: '13:00:00', duration_minutes: 180, total_marks: 100 },
+    
+    // Regular Exam
+    { exam_id: 4, course_id: 4, exam_date: '2024-04-01', start_time: '10:00:00', end_time: '12:00:00', duration_minutes: 120, total_marks: 50 },
+    { exam_id: 4, course_id: 5, exam_date: '2024-04-02', start_time: '14:00:00', end_time: '16:00:00', duration_minutes: 120, total_marks: 50 }
+  ]);
+
+  // 8. Insert Student Academic Status
   console.log('📊 Seeding academic status...');
   await knex('student_academic_status').insert([
     { student_id: 1, year: 2024, semester: 4, credits_earned: 45, credits_required: 60, cgpa: 8.5, status: 'active' },

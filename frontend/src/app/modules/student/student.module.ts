@@ -8,6 +8,9 @@ import { HallTicketsComponent } from './hall-tickets/hall-tickets.component';
 import { MindmapComponent } from './mindmap/mindmap.component';
 import { EventsComponent } from './events/events.component';
 import { NotificationsComponent } from './notifications/notifications.component';
+import { CourseMaterialsComponent } from './course-materials/course-materials.component';
+import { AssignmentsComponent } from './assignments/assignments.component';
+import { AssignmentSubmitComponent } from './assignment-submit/assignment-submit.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -15,7 +18,10 @@ const routes: Routes = [
   { path: 'hall-tickets', component: HallTicketsComponent },
   { path: 'mindmap', component: MindmapComponent },
   { path: 'events', component: EventsComponent },
-  { path: 'notifications', component: NotificationsComponent }
+  { path: 'notifications', component: NotificationsComponent },
+  { path: 'materials', component: CourseMaterialsComponent },
+  { path: 'assignments', component: AssignmentsComponent },
+  { path: 'assignments/:id/submit', component: AssignmentSubmitComponent }
 ];
 
 @NgModule({
@@ -24,7 +30,10 @@ const routes: Routes = [
     HallTicketsComponent,
     MindmapComponent,
     EventsComponent,
-    NotificationsComponent
+    NotificationsComponent,
+    CourseMaterialsComponent,
+    AssignmentsComponent,
+    AssignmentSubmitComponent
   ],
   imports: [
     CommonModule,
