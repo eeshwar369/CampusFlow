@@ -225,9 +225,11 @@ class AdminService {
 
     for (const file of files) {
       try {
-        // Extract roll number from filename (e.g., CS2021001_timestamp.pdf -> CS2021001)
+        // Extract roll number from filename (e.g., CS2021001.pdf -> CS2021001)
+        // Remove file extension first
         const filename = file.filename;
-        const rollNumber = filename.split('_')[0];
+        const filenameWithoutExt = filename.replace(/\.[^/.]+$/, ''); // Remove extension
+        const rollNumber = filenameWithoutExt.split('_')[0]; // Get part before underscore if any
 
         // Find student by roll number
         const [students] = await db.query(`

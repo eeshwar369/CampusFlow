@@ -27,18 +27,42 @@ const verifyToken = async (req, res, next) => {
     // Attach user data to request
     req.user = decoded;
     
-    // Get additional role-specific IDs
+    // Get additional role-specific IDs and all roles
     const db = require('../config/database');
     
-    if (decoded.role === 'student') {
-      const [students] = await db.query('SELECT id FROM students WHERE user_id = ?', [decoded.id]);
-      if (students.length > 0) {
-        req.user.studentId = students[0].id;
+    // Get user's all roles from database
+    const [users] = await db.query('SELECT role, roles FROM users WHERE id = ?', [decoded.id]);
+    if (users.length > 0) {
+      const user = users[0];
+      let userRoles = [user.role];
+      
+      // Parse multiple roles if available
+      if (user.roles) {
+        try {
+          const parsedRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+          if (Array.isArray(parsedRoles) && parsedRoles.length > 0) {
+            userRoles = parsedRoles;
+          }
+        } catch (e) {
+          console.error('Error parsing user roles:', e);
+        }
       }
-    } else if (decoded.role === 'faculty') {
-      const [faculty] = await db.query('SELECT id FROM faculty WHERE user_id = ?', [decoded.id]);
-      if (faculty.length > 0) {
-        req.user.facultyId = faculty[0].id;
+      
+      req.user.allRoles = userRoles;
+      
+      // Get role-specific IDs for all roles user has
+      if (userRoles.includes('student')) {
+        const [students] = await db.query('SELECT id FROM students WHERE user_id = ?', [decoded.id]);
+        if (students.length > 0) {
+          req.user.studentId = students[0].id;
+        }
+      }
+      
+      if (userRoles.includes('faculty')) {
+        const [faculty] = await db.query('SELECT id FROM faculty WHERE user_id = ?', [decoded.id]);
+        if (faculty.length > 0) {
+          req.user.facultyId = faculty[0].id;
+        }
       }
     }
     
@@ -82,7 +106,7 @@ const verifyToken = async (req, res, next) => {
  * @param {string[]} allowedRoles - Array of allowed roles
  */
 const checkRole = (allowedRoles) => {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
@@ -94,7 +118,40 @@ const checkRole = (allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    // Get user's all roles from database
+    const db = require('../config/database');
+    const [users] = await db.query('SELECT role, roles FROM users WHERE id = ?', [req.user.id]);
+    
+    if (users.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'User not found'
+        },
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    const user = users[0];
+    let userRoles = [user.role]; // Default to single role
+    
+    // Parse multiple roles if available
+    if (user.roles) {
+      try {
+        const parsedRoles = typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles;
+        if (Array.isArray(parsedRoles) && parsedRoles.length > 0) {
+          userRoles = parsedRoles;
+        }
+      } catch (e) {
+        console.error('Error parsing user roles:', e);
+      }
+    }
+
+    // Check if user has any of the allowed roles
+    const hasPermission = allowedRoles.some(role => userRoles.includes(role));
+    
+    if (!hasPermission) {
       return res.status(403).json({
         success: false,
         error: {
@@ -105,6 +162,9 @@ const checkRole = (allowedRoles) => {
       });
     }
 
+    // Attach all user roles to request for further use
+    req.user.allRoles = userRoles;
+    
     next();
   };
 };
