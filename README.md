@@ -1,20 +1,20 @@
 # CampusFlow - Academic Exam Management System
 
-A comprehensive full-stack web application for managing academic examinations, seating allocations, hall tickets, and student activities in educational institutions.
+A comprehensive full-stack web application for managing academic examinations, seating allocations, hall tickets, and student activities in educational institutions with **Apple-level professional design**.
 
 ## 🎯 Project Overview
 
 CampusFlow is an enterprise-grade exam management system that streamlines the entire examination process from exam creation to hall ticket generation. The system supports multiple user roles and provides intelligent seating allocation with conflict detection.
 
-## 🏗️ Architecture
+## ✨ Design Philosophy
 
-### Tech Stack
-
-**Frontend:**
-- Angular 15+ (TypeScript)
-- RxJS for reactive programming
-- Angular Material & Custom SCSS
-- JWT-based authentication
+CampusFlow features an **Apple-level professional design system** with:
+- **8pt Grid System** - Perfect mathematical balance in all spacing
+- **Sophisticated Typography** - Subtle weight differences using Inter/SF Pro fonts
+- **Neutral + 1 Color Palette** - Refined grays with sophisticated blue accent
+- **Soft Ambient Shadows** - Large-blur shadows instead of harsh borders
+- **Micro-Interactions** - 200ms transitions on all interactive elements
+- **T-based authentication
 - Responsive design
 
 **Backend:**
